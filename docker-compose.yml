@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  textforensics-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+      - NVIDIA_VISIBLE_DEVICES=all
+      # RTX 5070 Ti optimizations
+      - TORCH_CUDA_ARCH_LIST=8.9+PTX
+      - CUDA_LAUNCH_BLOCKING=0
+      - TORCH_CUDNN_V8_API_ENABLED=1
+    volumes:
+      - .:/workspace
+      - nvidia_cache:/root/.cache/nvidia
+      - huggingface_cache:/root/.cache/huggingface
+      - wandb_cache:/root/.cache/wandb
+      - jupyter_data:/root/.jupyter
+      - bash_history:/root/.bash_history
+    ports:
+      - "8888:8888"  # Jupyter Lab
+      - "6006:6006"  # TensorBoard
+      - "8097:8097"  # Wandb
+      - "8000:8000"  # FastAPI
+      - "7860:7860"  # Gradio
+    stdin_open: true
+    tty: true
+    command: >
+      bash -c "
+        echo '🚀 Starting TextForensics Development Environment'
+        echo '💻 Hardware: Ryzen 9 9950X3D + RTX 5070 Ti'
+        echo '🐳 Container: NVIDIA PyTorch 24.12 + CUDA 12.6'
+        echo '🐚 Shell: Bash with Starship prompt'
+        echo ''
+        echo '📊 Jupyter Lab: http://localhost:8888'
+        echo '📈 TensorBoard: http://localhost:6006'
+        echo '🔍 Wandb: http://localhost:8097'
+        echo ''
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
+        tensorboard --logdir=outputs/logs --host=0.0.0.0 --port=6006 &
+        exec bash
+      "
+
+  # Multi-GPU training service (when you get more GPUs)
+  textforensics-train:
+    extends: textforensics-dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=all
+      - NCCL_DEBUG=INFO
+      - TORCH_DISTRIBUTED_DEBUG=INFO
+    command: python scripts/train.py
+
+  # Jupyter-only service for pure notebook work
+  textforensics-jupyter:
+    extends: textforensics-dev
+    ports:
+      - "8888:8888"
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+
+  # API service for deployment
+  textforensics-api:
+    extends: textforensics-dev
+    ports:
+      - "8000:8000"
+    command: uvicorn textforensics.api:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  nvidia_cache:
+  huggingface_cache:
+  wandb_cache:
+  jupyter_data:
+  bash_history:

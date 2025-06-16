@@ -1,0 +1,23 @@
+# @package _global_
+# Quick test experiment configuration
+defaults:
+  - override /pipeline: training
+  - override /model: unified_base
+  - override /data: spooky_authors
+
+# Quick test overrides
+training:
+  max_epochs: 3
+  
+data:
+  splits:
+    train: 0.01  # Use only 1% of data
+    validation: 0.01
+    test: 0.01
+    
+pipeline:
+  logging:
+    log_every_n_steps: 5
+    
+debug: true
+experiment_name: "quick_test"

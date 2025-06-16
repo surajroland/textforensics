@@ -1,0 +1,37 @@
+# RTX 5070 Ti Optimized Configuration
+name: "rtx_5070_ti"
+description: "Optimized settings for RTX 5070 Ti (16GB GDDR7)"
+
+compute:
+  device: "cuda:0"
+  mixed_precision: true
+  amp_backend: "native"  # Use PyTorch native AMP
+  precision: "bf16"      # Better than fp16 for RTX 50 series
+  compile_model: true    # PyTorch 2.0 compilation
+  
+  # Memory optimization for 16GB GDDR7
+  memory:
+    gradient_accumulation_steps: 4
+    max_memory_mb: 14000  # Leave 2GB for system
+    empty_cache_steps: 50
+    pin_memory: true
+    
+  # RTX 5070 Ti specific optimizations
+  gpu_settings:
+    allow_tf32: true           # Enable TF32 for better performance
+    cudnn_benchmark: true      # Optimize for consistent input sizes
+    flash_attention: true      # Use Flash Attention 2
+    xformers_attention: true   # Memory-efficient attention
+    
+  # Parallelism settings
+  parallelism:
+    data_parallel: false
+    distributed: false
+    num_gpus: 1
+    
+  # Training optimizations
+  training:
+    batch_size: 24           # Optimal for 16GB VRAM
+    accumulation_steps: 2    # Effective batch size: 48
+    max_seq_length: 512      # Balance between memory and performance
+    gradient_checkpointing: true  # Trade compute for memory

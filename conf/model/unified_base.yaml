@@ -1,0 +1,57 @@
+# Unified Base Model Configuration
+name: "TextForensicsUnifiedModel"
+description: "Base configuration for unified multi-task model"
+
+# Model architecture
+architecture:
+  backbone: "bert-base-uncased"  
+  hidden_size: 768
+  num_attention_heads: 12
+  num_hidden_layers: 12
+  intermediate_size: 3072
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+  
+# Style encoder configuration
+style_encoder:
+  output_dim: 768
+  activation: "gelu"
+  layer_norm: true
+  
+# Task heads configuration
+task_heads:
+  style_classification:
+    enabled: true
+    num_classes: 3
+    hidden_dims: [512, 256]
+    dropout: 0.3
+    
+  style_transfer:
+    enabled: true
+    decoder_layers: 6
+    max_length: 512
+    vocab_size: 30522
+    
+  anomaly_detection:
+    enabled: true
+    threshold: 0.5
+    hidden_dims: [256, 128]
+    
+  similarity_scoring:
+    enabled: true
+    metric: "cosine"
+    temperature: 0.07
+    
+  consistency_tracking:
+    enabled: false
+    window_size: 5
+    
+  temporal_evolution:
+    enabled: false
+    time_embedding_dim: 64
+
+# Model initialization
+initialization:
+  pretrained: true
+  freeze_backbone: false
+  gradient_checkpointing: false

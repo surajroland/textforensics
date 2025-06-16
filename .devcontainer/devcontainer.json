@@ -1,0 +1,117 @@
+{
+  "name": "TextForensics GPU Development",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "textforensics-dev",
+  "workspaceFolder": "/workspace",
+  
+  // VS Code customizations
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Core Python Development
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.mypy-type-checker",
+        "ms-python.isort",
+        "ms-python.pylint",
+        "ms-python.flake8",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        
+        // Testing
+        "ms-python.pytest",
+        "littlefoxteam.vscode-python-test-adapter",
+        "hbenl.vscode-test-explorer",
+        "formulahendry.code-runner",
+        
+        // Jupyter & ML
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-notebook-renderers",
+        "ms-python.tensorboard",
+        "wandb.wandb-vscode",
+        "ms-toolsai.vscode-ai",
+        
+        // Git & Version Control
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "ms-vscode.vscode-github-issue-notebooks",
+        
+        // AI Tools
+        "github.copilot",
+        "github.copilot-chat",
+        
+        // Docker & DevOps
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.vscode-docker-compose",
+        
+        // Configuration Files
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-json",
+        "tamasfe.even-better-toml",
+        "ms-vscode.makefile-tools",
+        
+        // Documentation
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+        
+        // Data & Visualization
+        "mechatroner.rainbow-csv",
+        "ms-python.data-wrangler",
+        
+        // Environment Management
+        "donjayamanne.python-environment-manager",
+        
+        // Themes & UI
+        "zhuangtongfa.material-theme",
+        "pkief.material-icon-theme"
+      ],
+      "settings": {
+        "workbench.colorTheme": "One Dark Pro Flat",
+        "workbench.iconTheme": "material-icon-theme",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.fontFamily": "'Courier New', monospace",
+        "python.defaultInterpreterPath": "/usr/bin/python3.12",
+        "git-graph.repository.onLoad.showCheckedOutBranch": true,
+        "git-graph.graph.colours": [
+          "#0085d1", "#d73a49", "#28a745", "#ffd33d", 
+          "#f66a0a", "#6f42c1", "#e1e4e8"
+        ]
+      }
+    }
+  },
+ 
+  // Port forwarding
+  "forwardPorts": [8888, 6006, 8097, 8000, 7860],
+  "portsAttributes": {
+    "8888": {
+      "label": "Jupyter Lab",
+      "onAutoForward": "notify"
+    },
+    "6006": {
+      "label": "TensorBoard", 
+      "onAutoForward": "ignore"
+    },
+    "8097": {
+      "label": "Wandb",
+      "onAutoForward": "ignore"
+    },
+    "8000": {
+      "label": "FastAPI",
+      "onAutoForward": "ignore"
+    },
+    "7860": {
+      "label": "Gradio",
+      "onAutoForward": "ignore"
+    }
+  },
+  
+  "postCreateCommand": "echo '🚀 TextForensics GPU development environment ready! RTX 5070 Ti detected.'",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}

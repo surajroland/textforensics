@@ -1,0 +1,25 @@
+# AdamW Optimizer Configuration
+name: "adamw"
+description: "AdamW optimizer with cosine annealing"
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 5e-5
+  betas: [0.9, 0.999]
+  eps: 1e-8
+  weight_decay: 0.01
+  amsgrad: false
+
+# Learning rate scheduler
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
+  T_0: 10
+  T_mult: 2
+  eta_min: 1e-7
+  last_epoch: -1
+
+# Warmup configuration
+warmup:
+  enabled: true
+  warmup_steps: 1000
+  warmup_factor: 0.1

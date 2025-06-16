@@ -1,0 +1,42 @@
+# Spooky Authors Dataset Configuration
+name: "spooky_authors"
+description: "Kaggle Spooky Authors dataset (EAP, HPL, MWS)"
+
+# Data paths
+data_path: "data/raw/spooky_authors"
+cache_dir: "data/processed/spooky_authors"
+
+# Dataset parameters
+parameters:
+  authors: ["EAP", "HPL", "MWS"]  # Edgar Allan Poe, H.P. Lovecraft, Mary Shelley
+  num_classes: 3
+  max_length: 512
+  min_length: 50
+
+# Data splits
+splits:
+  train: 0.7
+  validation: 0.15
+  test: 0.15
+  stratify: true
+
+# Data processing
+preprocessing:
+  tokenizer: "bert-base-uncased"
+  lowercase: true
+  remove_special_chars: false
+  handle_contractions: true
+  
+# Data loading
+dataloader:
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  drop_last: false
+  shuffle: true
+
+# Augmentation (optional)
+augmentation:
+  enabled: false
+  methods: ["synonym_replacement", "random_insertion"]
+  probability: 0.1

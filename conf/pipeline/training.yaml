@@ -1,0 +1,45 @@
+# @package _global_
+name: "training_pipeline"
+description: "Multi-task training pipeline for TextForensics"
+
+pipeline:
+  type: "training"
+  
+  # Training settings
+  max_epochs: 50
+  patience: 10
+  save_top_k: 3
+  monitor_metric: "val_loss"
+  monitor_mode: "min"
+  
+  # Checkpointing
+  checkpoint:
+    save_every_n_epochs: 5
+    save_on_train_epoch_end: false
+    auto_insert_metric_name: true
+  
+  # Logging
+  logging:
+    log_every_n_steps: 50
+    log_model_graph: true
+    log_gradients: false
+    log_parameters: false
+  
+  # Validation
+  validation:
+    check_val_every_n_epoch: 1
+    val_check_interval: 1.0
+    limit_val_batches: 1.0
+  
+  # Multi-task training
+  task_weights:
+    style_classification: 1.0
+    style_transfer: 1.0
+    anomaly_detection: 0.8
+    similarity_scoring: 0.6
+    
+  # Curriculum learning
+  curriculum:
+    enabled: true
+    start_epoch: 10
+    difficulty_schedule: "linear"

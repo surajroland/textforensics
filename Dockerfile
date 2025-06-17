@@ -50,6 +50,9 @@ RUN apt-get update && apt-get install -y \
     tree \
     # Network tools
     netcat-openbsd \
+    iproute2 \
+    net-tools \
+    iputils-ping \
     # LaTeX for notebooks
     texlive-xetex \
     texlive-fonts-recommended \
@@ -135,6 +138,23 @@ RUN pip install -e .
 
 # Configure bash as default shell
 RUN chsh -s /bin/bash
+
+# Install Starship prompt (manual installation - more reliable than installer script)
+RUN curl -L https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-gnu.tar.gz -o starship.tar.gz && \
+    tar xzf starship.tar.gz && \
+    mv starship /usr/local/bin/ && \
+    rm starship.tar.gz && \
+    echo 'eval "$(starship init bash)"' >> /root/.bashrc
+
+# Create a script to install Starship after container startup
+RUN echo '#!/bin/bash\n\
+if [ ! -f /usr/local/bin/starship ]; then\n\
+  echo "Installing Starship prompt..."\n\
+  curl -sS https://starship.rs/install.sh | bash -s -- -y\n\
+  echo '\''eval "$(starship init bash)"'\'' >> /root/.bashrc\n\
+  echo "Starship installed successfully!"\n\
+fi' > /usr/local/bin/install-starship.sh && \
+chmod +x /usr/local/bin/install-starship.sh
 
 # Set up Jupyter Lab configuration
 RUN jupyter lab --generate-config && \

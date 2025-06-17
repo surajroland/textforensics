@@ -1,6 +1,3 @@
-version: '3.8'
-
-# Professional naming convention with environment and versioning
 services:
   # Main development service
   textforensics-dev:
@@ -59,7 +56,7 @@ services:
         echo '🚀 Starting TextForensics Development Environment'
         echo '💻 Hardware: Ryzen 9 9950X3D + RTX 5070 Ti'
         echo '🐳 Container: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}'
-        echo '🐚 Shell: Bash'
+        echo '🐚 Shell: Bash with Starship prompt'
         echo ''
         echo '📊 Jupyter Lab: http://localhost:${JUPYTER_PORT:-8888}'
         echo '📈 TensorBoard: http://localhost:${TENSORBOARD_PORT:-6006}'

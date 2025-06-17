@@ -1,5 +1,5 @@
-# TextForensics Professional Makefile - GPU Optimized for RTX 5070 Ti
-# Supports multi-stage builds and professional deployment workflows
+# TextForensics Makefile - GPU Optimized for RTX 5070 Ti
+# Supports multi-stage builds and deployment workflows
 
 .PHONY: help install install-dev test lint format clean build dev shell train api research
 .PHONY: build-dev build-prod build-train push pull logs down clean-all
@@ -20,7 +20,7 @@ BLUE := \033[0;34m
 NC := \033[0m # No Color
 
 help:
-	@echo "$(BLUE)🚀 TextForensics Professional Development Commands:$(NC)"
+	@echo "$(BLUE)🚀 TextForensics Development Commands:$(NC)"
 	@echo "$(GREEN)Local Development:$(NC)"
 	@echo "  install       Install package locally"
 	@echo "  install-dev   Install with development dependencies"

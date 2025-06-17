@@ -1,8 +1,12 @@
 # TextForensics GPU Development Environment
-# Optimized for Ryzen 9 9950X3D + RTX 5070 Ti (16GB GDDR7)
+# Multi-stage build optimized for Ryzen 9 9950X3D + RTX 5070 Ti (16GB GDDR7)
 
-# Use latest NVIDIA PyTorch container with CUDA 12.6
-FROM nvcr.io/nvidia/pytorch:24.12-py3
+# Base stage with common dependencies
+FROM nvcr.io/nvidia/pytorch:24.12-py3 AS base
+
+# Build arguments
+ARG BUILDKIT_INLINE_CACHE=1
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Set environment variables for optimal GPU usage
 ENV CUDA_VISIBLE_DEVICES=0
@@ -50,15 +54,17 @@ RUN apt-get update && apt-get install -y \
     texlive-xetex \
     texlive-fonts-recommended \
     texlive-plain-generic \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Set Python 3.12 as default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
 
 # Install Node.js for Jupyter Lab extensions
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean
 
 WORKDIR /workspace
 
@@ -81,66 +87,43 @@ RUN pip install \
     deepspeed==0.15.4 \
     fairscale==0.4.13
 
-# Install Hydra and configuration management
+# Install core dependencies in smaller groups to identify conflicts
+# Group 1: Configuration management
 RUN pip install \
     hydra-core==1.3.2 \
     omegaconf==2.3.0 \
     python-dotenv==1.0.0
 
-# Install ML utilities and monitoring
-RUN pip install \
-    wandb==0.18.6 \
-    tensorboard==2.18.0 \
-    mlflow==2.9.2 \
-    neptune==1.9.1 \
-    nvitop
+# Group 2: ML monitoring (most likely culprit for conflicts)
+RUN pip install --no-deps wandb==0.18.6 && \
+    pip install tensorboard==2.18.0 && \
+    pip install mlflow==2.9.2 && \
+    pip install neptune==1.9.1 && \
+    pip install nvitop
 
-# Install data and evaluation libraries
+# Group 3: Data libraries (install numpy first, then pandas)
+RUN pip install numpy==1.26.2 && \
+    pip install pandas==2.1.4
+
+# Group 4: ML and evaluation libraries  
 RUN pip install \
     datasets==3.0.0 \
     evaluate==0.4.2 \
     nltk==3.8.1 \
     spacy==3.7.2 \
-    scikit-learn==1.4.0 \
-    pandas==2.1.4 \
-    numpy==1.26.2
+    scikit-learn==1.4.0
 
-# Install visualization and UI
-RUN pip install \
-    matplotlib==3.8.2 \
+# Group 5: Visualization and UI (matplotlib can be tricky)
+RUN pip install matplotlib==3.8.2 && \
+    pip install \
     seaborn==0.13.0 \
     plotly==5.18.0 \
     rich==13.7.0 \
     typer==0.9.0
 
-# Install Jupyter ecosystem
-RUN pip install \
-    jupyter==1.1.1 \
-    jupyterlab==4.3.0 \
-    ipywidgets==8.1.1 \
-    jupyterlab-git==0.50.0 \
-    jupyterlab_code_formatter==2.2.1
-
-# Install development tools
-RUN pip install \
-    black==24.10.0 \
-    ruff==0.7.4 \
-    mypy==1.13.0 \
-    pytest==8.3.3 \
-    pytest-cov==6.0.0 \
-    pre-commit==4.0.1 \
-    isort==5.13.2
-
-# Install API and web tools
-RUN pip install \
-    fastapi==0.104.1 \
-    uvicorn==0.24.0 \
-    gradio==4.7.1 \
-    streamlit==1.29.0
-
 # Download spaCy models
-RUN python -m spacy download en_core_web_sm
-RUN python -m spacy download en_core_web_lg
+RUN python -m spacy download en_core_web_sm && \
+    python -m spacy download en_core_web_lg
 
 # Install TextForensics requirements
 COPY requirements.txt .
@@ -153,13 +136,9 @@ RUN pip install -e .
 # Configure bash as default shell
 RUN chsh -s /bin/bash
 
-# Install Starship prompt (official method)
-RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
-RUN echo 'eval "$(starship init bash)"' >> /root/.bashrc
-
 # Set up Jupyter Lab configuration
-RUN jupyter lab --generate-config
-RUN echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_lab_config.py && \
+RUN jupyter lab --generate-config && \
+    echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_lab_config.py && \
     echo "c.ServerApp.allow_root = True" >> /root/.jupyter/jupyter_lab_config.py && \
     echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_lab_config.py
 
@@ -169,5 +148,67 @@ EXPOSE 8888 6006 8097 8000 7860
 # Set working directory
 WORKDIR /workspace
 
-# Default command
+# Development stage - includes all development tools
+FROM base AS development
+
+# Install development tools
+RUN pip install \
+    # Jupyter ecosystem
+    jupyter==1.1.1 \
+    jupyterlab==4.3.0 \
+    ipywidgets==8.1.1 \
+    jupyterlab-git==0.50.0 \
+    jupyterlab_code_formatter==2.2.1 \
+    # Development tools
+    black==24.10.0 \
+    ruff==0.7.4 \
+    mypy==1.13.0 \
+    pytest==8.3.3 \
+    pytest-cov==6.0.0 \
+    pre-commit==4.0.1 \
+    isort==5.13.2 \
+    # API and web tools
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    gradio==4.7.1 \
+    streamlit==1.29.0
+
+# Default command for development
 CMD ["bash"]
+
+# Production stage - minimal for deployment
+FROM base AS production
+
+# Install only production API dependencies
+RUN pip install \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0
+
+# Remove development tools and caches
+RUN pip cache purge && \
+    rm -rf /root/.cache/pip
+
+# Health check for production
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import torch; assert torch.cuda.is_available()" || exit 1
+
+# Production command
+CMD ["uvicorn", "textforensics.api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Training stage - optimized for training workloads
+FROM base AS training
+
+# Install training-specific optimizations
+RUN pip install \
+    # Additional training tools
+    wandb==0.18.6 \
+    tensorboard==2.18.0 \
+    # Performance profiling
+    torch-tb-profiler
+
+# Training-specific optimizations
+ENV CUDA_LAUNCH_BLOCKING=0
+ENV TORCH_CUDNN_BENCHMARK=1
+
+# Default training command
+CMD ["python", "scripts/train.py"]

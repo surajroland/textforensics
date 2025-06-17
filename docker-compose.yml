@@ -84,7 +84,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    command: python scripts/train.py
+    command: python scripts/training/train.py
     profiles: ["training"]  # Only start with --profile training
 
   # API service for inference

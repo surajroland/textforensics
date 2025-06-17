@@ -1,8 +1,8 @@
-# TextForensics Makefile - GPU Optimized for RTX 5070 Ti
-# Supports multi-stage builds and deployment workflows
+# TextForensics Professional Makefile - GPU Optimized for RTX 5070 Ti
+# Supports multi-stage builds and professional deployment workflows
 
 .PHONY: help install install-dev test lint format clean build dev shell train api research
-.PHONY: build-dev build-prod build-train push pull logs down clean-all
+.PHONY: build-dev build-prod build-train push pull logs down clean-all setup-git setup-dev
 
 # Default environment variables
 DOCKER_REGISTRY ?= localhost
@@ -20,7 +20,7 @@ BLUE := \033[0;34m
 NC := \033[0m # No Color
 
 help:
-	@echo "$(BLUE)🚀 TextForensics Development Commands:$(NC)"
+	@echo "$(BLUE)🚀 TextForensics Professional Development Commands:$(NC)"
 	@echo "$(GREEN)Local Development:$(NC)"
 	@echo "  install       Install package locally"
 	@echo "  install-dev   Install with development dependencies"
@@ -28,6 +28,10 @@ help:
 	@echo "  lint          Run linting locally"
 	@echo "  format        Format code locally"
 	@echo "  clean         Clean build artifacts"
+	@echo ""
+	@echo "$(GREEN)🛠️  Development Setup:$(NC)"
+	@echo "  setup-git     Configure Git and SSH for development"
+	@echo "  setup-dev     Complete development environment setup"
 	@echo ""
 	@echo "$(GREEN)🐳 Docker Commands:$(NC)"
 	@echo "  build         Build all Docker images"
@@ -86,6 +90,23 @@ clean:
 	rm -rf .mypy_cache/
 	find . -type d -name __pycache__ -delete
 	find . -type f -name "*.pyc" -delete
+
+# Development setup commands
+setup-git:
+	@echo "$(BLUE)🔧 Setting up Git and SSH configuration...$(NC)"
+	@chmod +x scripts/dev/git-config-init.sh
+	@./scripts/dev/git-config-init.sh
+
+setup-dev: setup-git build-dev dev
+	@echo "$(GREEN)✅ Complete development environment setup finished!$(NC)"
+	@echo "$(GREEN)🚀 Development container is now running!$(NC)"
+	@echo "$(YELLOW)Ready to use:$(NC)"
+	@echo "  📊 Jupyter Lab: http://localhost:8888"
+	@echo "  📈 TensorBoard: http://localhost:6006"
+	@echo "  🔍 Wandb: http://localhost:8097"
+	@echo ""
+	@echo "$(BLUE)Next step:$(NC)"
+	@echo "  make shell    # Get interactive shell in container"
 
 # Docker build commands
 build: build-dev build-prod build-train
@@ -181,12 +202,12 @@ test-gpu:
 benchmark:
 	@echo "$(BLUE)📊 Running GPU benchmarks for RTX 5070 Ti...$(NC)"
 	docker-compose -f $(COMPOSE_FILE) exec $(SERVICE_DEV) \
-		python scripts/benchmark_gpu.py
+		python scripts/training/benchmark_gpu.py
 
 monitor:
 	@echo "$(BLUE)📈 Starting GPU monitoring...$(NC)"
 	docker-compose -f $(COMPOSE_FILE) exec $(SERVICE_DEV) \
-		python scripts/monitor_gpu.py
+		python scripts/monitoring/monitor_gpu.py
 
 # Health checks
 health:
@@ -198,7 +219,7 @@ health:
 quick-test: build-dev
 	@echo "$(BLUE)⚡ Running quick training test...$(NC)"
 	docker-compose -f $(COMPOSE_FILE) run --rm $(SERVICE_DEV) \
-		python scripts/train.py +experiment=quick_test training.max_epochs=1
+		python scripts/training/train.py +experiment=quick_test training.max_epochs=1
 
 full-train: build-train
 	@echo "$(BLUE)🎯 Starting full training pipeline...$(NC)"

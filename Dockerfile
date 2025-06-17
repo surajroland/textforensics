@@ -108,7 +108,7 @@ RUN pip install --no-deps wandb==0.18.6 && \
 RUN pip install numpy==1.26.2 && \
     pip install pandas==2.1.4
 
-# Group 4: ML and evaluation libraries  
+# Group 4: ML and evaluation libraries
 RUN pip install \
     datasets==3.0.0 \
     evaluate==0.4.2 \
@@ -145,16 +145,6 @@ RUN curl -L https://github.com/starship/starship/releases/latest/download/starsh
     mv starship /usr/local/bin/ && \
     rm starship.tar.gz && \
     echo 'eval "$(starship init bash)"' >> /root/.bashrc
-
-# Create a script to install Starship after container startup
-RUN echo '#!/bin/bash\n\
-if [ ! -f /usr/local/bin/starship ]; then\n\
-  echo "Installing Starship prompt..."\n\
-  curl -sS https://starship.rs/install.sh | bash -s -- -y\n\
-  echo '\''eval "$(starship init bash)"'\'' >> /root/.bashrc\n\
-  echo "Starship installed successfully!"\n\
-fi' > /usr/local/bin/install-starship.sh && \
-chmod +x /usr/local/bin/install-starship.sh
 
 # Set up Jupyter Lab configuration
 RUN jupyter lab --generate-config && \
@@ -231,4 +221,4 @@ ENV CUDA_LAUNCH_BLOCKING=0
 ENV TORCH_CUDNN_BENCHMARK=1
 
 # Default training command
-CMD ["python", "scripts/train.py"]
+CMD ["python", "scripts/training/train.py"]

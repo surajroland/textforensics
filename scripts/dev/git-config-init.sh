@@ -251,6 +251,39 @@ RUN if [ \"\$SETUP_DEV_CONFIG\" = \"true\" ]; then \\"
     fi
 }
 
+# Install pre-commit hooks
+setup_precommit_hooks() {
+    echo -e "\n${BLUE}🔧 Setting up pre-commit hooks...${NC}"
+
+    # Check if pre-commit is available
+    if ! command -v pre-commit &> /dev/null; then
+        echo -e "${YELLOW}⚠️  Pre-commit not found - will be available in container${NC}"
+        return 0
+    fi
+
+    # Check if .pre-commit-config.yaml exists
+    if [[ ! -f ".pre-commit-config.yaml" ]]; then
+        echo -e "${YELLOW}⚠️  .pre-commit-config.yaml not found${NC}"
+        return 0
+    fi
+
+    # Install pre-commit hooks
+    echo -e "${BLUE}Installing pre-commit hooks...${NC}"
+    if pre-commit install --install-hooks; then
+        echo -e "${GREEN}✅ Pre-commit hooks installed successfully${NC}"
+
+        # Run pre-commit on all files to ensure everything is set up
+        echo -e "${BLUE}Running initial pre-commit check...${NC}"
+        if pre-commit run --all-files; then
+            echo -e "${GREEN}✅ All pre-commit checks passed${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Pre-commit fixed some files - they're now properly formatted${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Could not install pre-commit hooks - will be available in container${NC}"
+    fi
+}
+
 # Main execution logic
 echo -e "\n${BLUE}📋 Configuration Summary:${NC}"
 echo "  SSH Keys: $([ "$SSH_FOUND" = true ] && echo -e "${GREEN}Found at $SSH_PATH${NC}" || echo -e "${YELLOW}Not found${NC}")"
@@ -265,15 +298,17 @@ if [[ "$SSH_FOUND" == false || "$GIT_CONFIG_FOUND" == false ]]; then
     setup_missing_config
 fi
 
-# Final instructions
-echo -e "\n${BLUE}🚀 Setup complete! Next steps:${NC}"
-echo "1. Run: make build-dev"
-echo "2. Run: make dev"
+# Set up pre-commit hooks
+setup_precommit_hooks
+
+# Final instructions - after ALL work is complete
+echo -e "\n${GREEN}✅ Git/SSH configuration and pre-commit hooks setup complete!${NC}"
+echo -e "\n${BLUE}🚀 Next steps:${NC}"
+echo "1. Run: make build-dev    # Build development environment"
+echo "2. Run: make dev          # Start development environment"
 
 if [[ "$SSH_FOUND" == true && "$GIT_CONFIG_FOUND" == true ]]; then
-    echo -e "3. ${GREEN}Your existing SSH keys and Git config will be available in the container${NC}"
+    echo -e "\n${BLUE}ℹ️  Note: ${GREEN}Your existing SSH keys and Git config will be available in the container${NC}"
 elif [[ "$SSH_FOUND" == false ]]; then
-    echo -e "3. ${YELLOW}SSH key will be generated during build - add the public key to GitHub${NC}"
+    echo -e "\n${BLUE}ℹ️  Note: ${YELLOW}SSH key will be generated during build - add the public key to GitHub${NC}"
 fi
-
-echo -e "\n${GREEN}✅ TextForensics development environment is ready for Git/SSH configuration!${NC}"

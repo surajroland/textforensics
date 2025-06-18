@@ -1,7 +1,7 @@
 services:
   # Main development service
   textforensics-dev:
-    image: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}
+    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
     container_name: textforensics-dev
     user: "${UID:-1000}:${GID:-1000}"
     build:
@@ -35,13 +35,13 @@ services:
       - TORCH_CUDNN_V8_API_ENABLED=1
     volumes:
       - .:/workspace
-      - ${HOME}/.gitconfig:/home/appuser/.gitconfig:ro
-      - ${HOME}/.ssh:/home/appuser/.ssh:rw
-      - nvidia_cache:/home/appuser/.cache/nvidia
-      - huggingface_cache:/home/appuser/.cache/huggingface
-      - wandb_cache:/home/appuser/.cache/wandb
-      - jupyter_data:/home/appuser/.jupyter
-      - bash_history:/home/appuser/.bash_history
+      - ${HOME}/.gitconfig:${HOME}/.gitconfig:ro
+      - ${HOME}/.ssh:${HOME}/.ssh:rw
+      - nvidia_cache:${HOME}/.cache/nvidia
+      - huggingface_cache:${HOME}/.cache/huggingface
+      - wandb_cache:${HOME}/.cache/wandb
+      - jupyter_data:${HOME}/.jupyter
+      - bash_history:${HOME}/.bash_history
       - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
@@ -63,7 +63,7 @@ services:
       bash -c "
         echo '🚀 Starting TextForensics Development Environment'
         echo '💻 Hardware: Ryzen 9 9950X3D + RTX 5070 Ti'
-        echo '🐳 Container: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}'
+        echo '🐳 Container: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}'
         echo '🐚 Shell: Bash with Starship prompt'
         echo ''
         echo '📊 Jupyter Lab: http://localhost:${JUPYTER_PORT:-8888}'
@@ -77,7 +77,7 @@ services:
 
   # Training service for production workloads
   textforensics-trainer:
-    image: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}
+    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
     container_name: textforensics-trainer
     extends: textforensics-dev
     environment:
@@ -97,7 +97,7 @@ services:
 
   # API service for inference
   textforensics-api:
-    image: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}
+    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
     container_name: textforensics-api
     extends: textforensics-dev
     environment:
@@ -111,7 +111,7 @@ services:
 
   # Jupyter-only service for research
   textforensics-research:
-    image: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}
+    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
     container_name: textforensics-research
     extends: textforensics-dev
     ports:

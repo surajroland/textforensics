@@ -91,7 +91,7 @@ update_env_file() {
             cat > "$ENV_FILE" << EOF
 # TextForensics Environment Configuration
 VERSION=dev
-DOCKER_REGISTRY=
+DOCKER_REGISTRY=textforensics
 JUPYTER_PORT=8888
 TENSORBOARD_PORT=6006
 API_PORT=8000

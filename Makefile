@@ -3,9 +3,10 @@
 
 .PHONY: help install install-dev test lint format clean build dev shell train api research
 .PHONY: build-dev build-prod build-train push pull logs down clean-all setup-git-ssh setup-dev setup
+.PHONY: clean-project clean-volumes clean-all-system
 
 # Default environment variables
-DOCKER_REGISTRY ?= localhost
+DOCKER_REGISTRY ?= textforensics
 VERSION ?= dev
 COMPOSE_FILE ?= docker-compose.yml
 SERVICE_DEV = textforensics-dev
@@ -49,7 +50,9 @@ help:
 	@echo "$(GREEN)🔧 Utilities:$(NC)"
 	@echo "  logs          Show container logs"
 	@echo "  down          Stop all services"
-	@echo "  clean-all     Clean everything (containers, images, volumes)"
+	@echo "  clean-all     Clean TextForensics resources only (SAFE)"
+	@echo "  clean-project Clean containers and images only"
+	@echo "  clean-volumes Clean TextForensics volumes only"
 	@echo "  push          Push images to registry"
 	@echo "  pull          Pull images from registry"
 	@echo ""
@@ -180,11 +183,42 @@ down:
 	@echo "$(YELLOW)🛑 Stopping all services...$(NC)"
 	docker-compose -f $(COMPOSE_FILE) down
 
-clean-all: down
-	@echo "$(RED)🧹 Cleaning all containers, images, and volumes...$(NC)"
+# Safe cleanup commands that only affect TextForensics
+clean-project: down
+	@echo "$(YELLOW)🧹 Cleaning TextForensics containers and images only...$(NC)"
+	# Remove only TextForensics containers
+	-docker rm -f $(shell docker ps -aq --filter "name=textforensics" 2>/dev/null) 2>/dev/null || true
+	# Remove only TextForensics images
+	-docker rmi -f $(shell docker images -q --filter "reference=*textforensics*" 2>/dev/null) 2>/dev/null || true
+	-docker rmi -f $(shell docker images -q --filter "reference=$(DOCKER_REGISTRY)/textforensics*" 2>/dev/null) 2>/dev/null || true
+	# Remove only TextForensics networks
+	-docker network rm textforensics-network 2>/dev/null || true
+	@echo "$(GREEN)✅ TextForensics cleanup complete$(NC)"
+
+clean-volumes:
+	@echo "$(YELLOW)🗂️  Removing TextForensics volumes only...$(NC)"
+	-docker volume rm textforensics_nvidia_cache 2>/dev/null || true
+	-docker volume rm textforensics_huggingface_cache 2>/dev/null || true
+	-docker volume rm textforensics_wandb_cache 2>/dev/null || true
+	-docker volume rm textforensics_jupyter_data 2>/dev/null || true
+	-docker volume rm textforensics_bash_history 2>/dev/null || true
+	-docker volume rm textforensics_postgres_data 2>/dev/null || true
+	-docker volume rm textforensics_redis_data 2>/dev/null || true
+	@echo "$(GREEN)✅ TextForensics volumes removed$(NC)"
+
+# DANGEROUS: Only use if you understand the impact
+clean-all-system: down
+	@echo "$(RED)⚠️  WARNING: This will remove ALL unused Docker resources system-wide!$(NC)"
+	@echo "$(RED)This affects other users and projects on this machine.$(NC)"
+	@read -p "Are you absolutely sure? Type 'YES' to continue: " confirm && [ "$$confirm" = "YES" ]
 	docker-compose -f $(COMPOSE_FILE) down -v --remove-orphans
 	docker system prune -f
 	docker volume prune -f
+	@echo "$(RED)🧹 System-wide cleanup complete$(NC)"
+
+# Safe default cleanup (replaces old clean-all)
+clean-all: clean-project clean-volumes
+	@echo "$(GREEN)✅ Safe TextForensics cleanup complete$(NC)"
 
 # Registry operations
 push: build

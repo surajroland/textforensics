@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Setup script for TextForensics package"""
 
-from setuptools import setup, find_packages
 from pathlib import Path
+
+from setuptools import find_packages, setup
 
 # Read README
 this_directory = Path(__file__).parent
@@ -15,7 +16,7 @@ except FileNotFoundError:
 requirements = []
 requirements_path = this_directory / "requirements.txt"
 if requirements_path.exists():
-    requirements = requirements_path.read_text().strip().split('\n')
+    requirements = requirements_path.read_text().strip().split("\n")
 
 setup(
     name="textforensics",

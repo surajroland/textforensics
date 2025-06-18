@@ -1,7 +1,7 @@
 # TextForensics Main Configuration
 defaults:
   - pipeline: training                    # Default pipeline
-  - model: unified_base                  # Default model  
+  - model: unified_base                  # Default model
   - data: spooky_authors                 # Default dataset
   - training/optimizer: adamw            # Default optimizer
   - training/loss: multi_task            # Default loss
@@ -17,7 +17,7 @@ debug: false
 log_level: INFO
 experiment_name: null  # Auto-generated if null
 
-# Output configuration  
+# Output configuration
 output_dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
 checkpoint_dir: ${output_dir}/checkpoints
 log_dir: ${output_dir}/logs

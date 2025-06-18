@@ -2,7 +2,7 @@
 # Supports multi-stage builds and professional deployment workflows
 
 .PHONY: help install install-dev test lint format clean build dev shell train api research
-.PHONY: build-dev build-prod build-train push pull logs down clean-all setup-git setup-dev
+.PHONY: build-dev build-prod build-train push pull logs down clean-all setup-git-ssh setup-dev setup
 
 # Default environment variables
 DOCKER_REGISTRY ?= localhost
@@ -30,8 +30,8 @@ help:
 	@echo "  clean         Clean build artifacts"
 	@echo ""
 	@echo "$(GREEN)🛠️  Development Setup:$(NC)"
-	@echo "  setup-git     Configure Git and SSH for development"
-	@echo "  setup-dev     Complete development environment setup"
+	@echo "  setup-git-ssh Configure Git and SSH for development"
+	@echo "  setup         Complete development environment setup"
 	@echo ""
 	@echo "$(GREEN)🐳 Docker Commands:$(NC)"
 	@echo "  build         Build all Docker images"
@@ -92,12 +92,12 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 # Development setup commands
-setup-git:
+setup-git-ssh:
 	@echo "$(BLUE)🔧 Setting up Git and SSH configuration...$(NC)"
-	@chmod +x scripts/dev/git-config-init.sh
-	@./scripts/dev/git-config-init.sh
+	@chmod +x scripts/dev/setup-git-ssh.sh
+	@./scripts/dev/setup-git-ssh.sh
 
-setup-dev: setup-git build-dev dev
+setup: setup-git-ssh build-dev dev
 	@echo "$(GREEN)✅ Complete development environment setup finished!$(NC)"
 	@echo "$(GREEN)🚀 Development container is now running!$(NC)"
 	@echo "$(YELLOW)Ready to use:$(NC)"

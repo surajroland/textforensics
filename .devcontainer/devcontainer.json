@@ -3,7 +3,7 @@
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "textforensics-dev",
   "workspaceFolder": "/workspace",
-  
+
   // Environment variables for development
   "containerEnv": {
     "PYTHONPATH": "/workspace/src",
@@ -11,7 +11,7 @@
     "CUDA_LAUNCH_BLOCKING": "0",
     "TORCH_CUDNN_V8_API_ENABLED": "1"
   },
-  
+
   // VS Code customizations
   "customizations": {
     "vscode": {
@@ -25,14 +25,14 @@
         "ms-python.flake8",
         "ms-python.debugpy",
         "charliermarsh.ruff",
-        
+
         // Testing & Quality
         "ms-python.pytest",
         "littlefoxteam.vscode-python-test-adapter",
         "hbenl.vscode-test-explorer",
         "formulahendry.code-runner",
         "ms-python.python-type-hints",
-        
+
         // Jupyter & ML
         "ms-toolsai.jupyter",
         "ms-toolsai.jupyter-notebook-renderers",
@@ -40,7 +40,7 @@
         "wandb.wandb-vscode",
         "ms-toolsai.vscode-ai",
         "ms-toolsai.jupyter-keymap",
-        
+
         // Git & Version Control
         "eamodio.gitlens",
         "mhutchie.git-graph",
@@ -48,48 +48,48 @@
         "github.vscode-github-actions",
         "ms-vscode.vscode-github-issue-notebooks",
         "github.vscode-github-copilot",
-        
+
         // AI Tools
         "github.copilot",
         "github.copilot-chat",
-        
+
         // Docker & DevOps
         "ms-vscode-remote.remote-containers",
         "ms-azuretools.vscode-docker",
         "ms-vscode.vscode-docker-compose",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
-        
+
         // Configuration Files
         "redhat.vscode-yaml",
         "ms-vscode.vscode-json",
         "tamasfe.even-better-toml",
         "ms-vscode.makefile-tools",
         "ms-vscode.vscode-task-buttons",
-        
+
         // Documentation & Writing
         "yzhang.markdown-all-in-one",
         "davidanson.vscode-markdownlint",
         "ms-vscode.live-server",
         "shd101wyy.markdown-preview-enhanced",
-        
+
         // Data & Visualization
         "mechatroner.rainbow-csv",
         "ms-python.data-wrangler",
         "randomfractalsinc.vscode-data-preview",
         "quarto.quarto",
-        
+
         // Environment Management
         "donjayamanne.python-environment-manager",
         "ms-python.conda",
         "ms-python.vscode-pylance",
-        
+
         // Productivity & UI
         "zhuangtongfa.material-theme",
         "pkief.material-icon-theme",
         "gruntfuggly.todo-tree",
         "wayou.vscode-todo-highlight",
         "ms-vscode.vscode-speech",
-        
+
         // Performance & Monitoring
         "ms-vscode.vscode-edge-debug2",
         "ms-vscode.vscode-json-languageservice"
@@ -100,14 +100,14 @@
         "workbench.iconTheme": "material-icon-theme",
         "workbench.startupEditor": "readme",
         "workbench.sideBar.location": "left",
-        
+
         // Terminal
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.fontFamily": "'Fira Code', 'Courier New', monospace",
         "terminal.integrated.fontSize": 14,
         "terminal.integrated.copyOnSelection": true,
         "terminal.integrated.rightClickBehavior": "paste",
-        
+
         // Python Configuration
         "python.defaultInterpreterPath": "/usr/bin/python3.12",
         "python.formatting.provider": "none",
@@ -118,7 +118,7 @@
         "python.testing.pytestEnabled": true,
         "python.testing.unittestEnabled": false,
         "python.testing.autoTestDiscoverOnSaveEnabled": true,
-        
+
         // Code Formatting
         "[python]": {
           "editor.defaultFormatter": "ms-python.black-formatter",
@@ -128,30 +128,30 @@
             "source.fixAll.ruff": "explicit"
           }
         },
-        
+
         // Jupyter Configuration
         "jupyter.askForKernelRestart": false,
         "jupyter.interactiveWindow.creationMode": "perFile",
         "jupyter.notebookFileRoot": "${workspaceFolder}",
         "jupyter.jupyterServerType": "local",
-        
+
         // Git Configuration
         "git.enableSmartCommit": true,
         "git.confirmSync": false,
         "git.autofetch": true,
         "git-graph.repository.onLoad.showCheckedOutBranch": true,
         "git-graph.graph.colours": [
-          "#0085d1", "#d73a49", "#28a745", "#ffd33d", 
+          "#0085d1", "#d73a49", "#28a745", "#ffd33d",
           "#f66a0a", "#6f42c1", "#e1e4e8"
         ],
         "gitlens.currentLine.enabled": false,
         "gitlens.codeLens.enabled": false,
-        
+
         // Docker Configuration
         "docker.showStartPage": false,
         "docker.dockerComposeBuild": true,
         "docker.dockerComposeDetached": true,
-        
+
         // File Associations
         "files.associations": {
           "*.yaml": "yaml",
@@ -161,7 +161,7 @@
           "Dockerfile*": "dockerfile",
           "*.cu": "cuda-cpp"
         },
-        
+
         // Editor Configuration
         "editor.fontSize": 14,
         "editor.fontLigatures": true,
@@ -171,7 +171,7 @@
         "editor.bracketPairColorization.enabled": true,
         "editor.guides.bracketPairs": true,
         "editor.inlineSuggest.enabled": true,
-        
+
         // Search Configuration
         "search.exclude": {
           "**/outputs": true,
@@ -183,15 +183,15 @@
           "**/node_modules": true,
           "**/.mypy_cache": true
         },
-        
+
         // ML/AI Specific Settings
         "tensorBoard.logDirectory": "${workspaceFolder}/outputs/logs",
         "wandb.project": "textforensics",
-        
+
         // Task Configuration
         "task.showDecorations": true,
         "task.quickOpen.history": 10,
-        
+
         // Performance
         "files.watcherExclude": {
           "**/.git/objects/**": true,
@@ -203,7 +203,7 @@
       }
     }
   },
-  
+
   // Comprehensive port forwarding
   "forwardPorts": [8888, 6006, 8097, 8000, 7860, 5000, 3000, 5432, 6379],
   "portsAttributes": {
@@ -212,7 +212,7 @@
       "onAutoForward": "notify"
     },
     "6006": {
-      "label": "TensorBoard", 
+      "label": "TensorBoard",
       "onAutoForward": "ignore"
     },
     "8097": {
@@ -244,11 +244,11 @@
       "onAutoForward": "ignore"
     }
   },
-  
+
   // Lifecycle commands
   "postCreateCommand": "bash -c 'echo \"🚀 TextForensics GPU development environment ready! RTX 5070 Ti detected.\" && echo \"📦 Installing pre-commit hooks...\" && pre-commit install --install-hooks && echo \"✅ Environment setup complete!\"'",
   "postStartCommand": "echo '🔥 Container started! GPU status:' && python -c 'import torch; print(f\"CUDA: {torch.cuda.is_available()}\")'",
-  
+
   // Development container features
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
@@ -267,22 +267,22 @@
       "username": "root"
     }
   },
-  
+
   // Mount configuration for optimal performance
   "mounts": [
     "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached",
     "source=${localWorkspaceFolder}/.git,target=/workspace/.git,type=bind,consistency=cached"
   ],
-  
+
   // Development optimizations
   "initializeCommand": "echo '🏗️ Initializing TextForensics development environment...'",
   "onCreateCommand": "echo '📋 Creating development container...'",
-  
+
   // Security and permissions
   "privileged": false,
   "remoteUser": "root",
   "updateRemoteUserUID": false,
-  
+
   // Development workflow
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
 }

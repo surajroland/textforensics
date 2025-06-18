@@ -9,7 +9,7 @@ A comprehensive neural platform for text forensics, including style analysis, pl
 ## 🎯 Features
 
 - **Style Classification**: Identify authors from writing style
-- **Style Transfer**: Transform text style while preserving content  
+- **Style Transfer**: Transform text style while preserving content
 - **Plagiarism Detection**: Advanced similarity detection algorithms
 - **Anomaly Detection**: Identify inconsistent writing patterns
 - **Multi-task Learning**: Unified model for all forensics tasks
@@ -68,7 +68,7 @@ python scripts/monitor_gpu.py
 ### Access Development Services
 
 - **📊 Jupyter Lab**: http://localhost:8888
-- **📈 TensorBoard**: http://localhost:6006  
+- **📈 TensorBoard**: http://localhost:6006
 - **🔍 Wandb**: http://localhost:8097
 - **🚀 FastAPI**: http://localhost:8000
 
@@ -80,7 +80,7 @@ The project uses Hydra for configuration management:
 # Different models
 python scripts/train.py model=unified_base
 
-# Different datasets  
+# Different datasets
 python scripts/train.py data=spooky_authors
 
 # Hyperparameter sweeps
@@ -103,7 +103,7 @@ Shared BERT Backbone
 │
 ├── Classification Heads
 │   ├── Style Classification
-│   ├── Anomaly Detection  
+│   ├── Anomaly Detection
 │   └── Genre Classification
 │
 ├── Generation Heads

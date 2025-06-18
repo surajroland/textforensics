@@ -4,9 +4,12 @@
 # Base stage with common dependencies
 FROM nvcr.io/nvidia/pytorch:24.12-py3 AS base
 
-# Build arguments
+# Build arguments - no hardcoded values
 ARG BUILDKIT_INLINE_CACHE=1
 ARG DEBIAN_FRONTEND=noninteractive
+ARG GIT_USER_NAME
+ARG GIT_USER_EMAIL
+ARG SETUP_DEV_CONFIG=true
 
 # Set environment variables for optimal GPU usage
 ENV CUDA_VISIBLE_DEVICES=0
@@ -182,6 +185,58 @@ RUN pip install \
     uvicorn==0.24.0 \
     gradio==4.7.1 \
     streamlit==1.29.0
+
+# Development Git and SSH setup with automation - only runs if SSH keys aren't mounted
+RUN if [ "$SETUP_DEV_CONFIG" = "true" ]; then \
+        # Check if SSH keys are already mounted
+        if [ ! -f "/root/.ssh/id_ed25519" ] && [ ! -f "/root/.ssh/id_rsa" ]; then \
+            echo -e "\nNo SSH keys found. Generating new keys..." && \
+            # Generate SSH key for development \
+            mkdir -p /root/.ssh && \
+            ssh-keygen -t ed25519 -C "${GIT_USER_EMAIL:-dev@example.com}" -f /root/.ssh/id_ed25519 -N "" && \
+            chmod 700 /root/.ssh && \
+            chmod 600 /root/.ssh/* && \
+            \
+            # Add GitHub to known_hosts \
+            ssh-keyscan -H github.com >> /root/.ssh/known_hosts && \
+            \
+            # Display the public key \
+            echo -e "\nSSH key generated! Add this public key to GitHub:" && \
+            echo "==========================================" && \
+            cat /root/.ssh/id_ed25519.pub && \
+            echo "=========================================="; \
+        else \
+            echo -e "\nUsing existing SSH keys mounted from host."; \
+        fi; \
+        \
+        # Check if Git config is already mounted
+        if [ ! -f "/root/.gitconfig" ]; then \
+            # Only set Git config if we have the values
+            if [ -n "$GIT_USER_NAME" ] && [ -n "$GIT_USER_EMAIL" ]; then \
+                echo -e "\nNo Git config found. Creating new config..." && \
+                # Setup Git configuration \
+                git config --global user.name "$GIT_USER_NAME" && \
+                git config --global user.email "$GIT_USER_EMAIL" && \
+                echo -e "\nGit config created with:"; \
+                echo "Name:  $GIT_USER_NAME"; \
+                echo "Email: $GIT_USER_EMAIL"; \
+            else \
+                echo -e "\nNo Git config found and no values provided."; \
+                echo -e "You may need to configure Git manually."; \
+            fi; \
+        else \
+            echo -e "\nUsing existing Git config mounted from host."; \
+        fi; \
+        \
+        # Create SSH agent startup script \
+        echo '#!/bin/bash' > /usr/local/bin/start-ssh-agent.sh && \
+        echo 'eval "$(ssh-agent -s)" > /dev/null' >> /usr/local/bin/start-ssh-agent.sh && \
+        echo 'ssh-add /root/.ssh/id_ed25519 2>/dev/null || ssh-add /root/.ssh/id_rsa 2>/dev/null || true' >> /usr/local/bin/start-ssh-agent.sh && \
+        chmod +x /usr/local/bin/start-ssh-agent.sh && \
+        \
+        # Add to bashrc for automatic SSH agent \
+        echo 'source /usr/local/bin/start-ssh-agent.sh' >> /root/.bashrc; \
+    fi
 
 # Default command for development
 CMD ["bash"]

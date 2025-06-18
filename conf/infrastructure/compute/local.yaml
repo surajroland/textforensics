@@ -6,13 +6,13 @@ compute:
   device: "auto"  # Auto-detect GPU/CPU
   mixed_precision: true
   compile_model: false  # PyTorch 2.0 compilation
-  
+
   # Memory management
   memory:
     gradient_accumulation_steps: 1
     max_memory_mb: null  # Auto-detect
     empty_cache_steps: 100
-    
+
   # Parallelism
   parallelism:
     data_parallel: false

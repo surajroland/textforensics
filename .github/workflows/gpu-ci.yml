@@ -9,20 +9,20 @@ on:
 jobs:
   gpu-tests:
     runs-on: [self-hosted, gpu, linux]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up environment
       run: |
         cp .env.example .env
         echo "WANDB_API_KEY=${{ secrets.WANDB_API_KEY }}" >> .env
         echo "HF_TOKEN=${{ secrets.HF_TOKEN }}" >> .env
-    
+
     - name: Build GPU Docker image
       run: |
         make build-gpu
-    
+
     - name: Test GPU availability
       run: |
         docker-compose -f docker-compose.yml run --rm textforensics-dev \
@@ -34,22 +34,22 @@ jobs:
           print(f'✅ PyTorch Version: {torch.__version__}')
           print(f'✅ Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB')
           "
-    
+
     - name: Run GPU benchmarks
       run: |
         docker-compose -f docker-compose.yml run --rm textforensics-dev \
           python scripts/benchmark_gpu.py
-    
+
     - name: Run unit tests
       run: |
         docker-compose -f docker-compose.yml run --rm textforensics-dev \
           pytest tests/unit/ -v --tb=short
-    
+
     - name: Quick training test
       run: |
         docker-compose -f docker-compose.yml run --rm textforensics-dev \
           python scripts/train.py +experiment=quick_test training.max_epochs=1
-    
+
     - name: Code quality checks
       run: |
         docker-compose -f docker-compose.yml run --rm textforensics-dev \
@@ -58,7 +58,7 @@ jobs:
           ruff check src/ tests/ &&
           mypy src/
           "
-    
+
     - name: Cleanup
       if: always()
       run: |

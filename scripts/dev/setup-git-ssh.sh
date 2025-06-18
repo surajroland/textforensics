@@ -1,5 +1,7 @@
 #!/bin/bash
-# scripts/dev/setup-git-ssh.sh - Flexible Git and SSH configuration setup
+
+# TextForensics Smart Git & SSH Setup Script
+# Auto-detects git config, manages .env file, and sets up SSH keys
 
 set -e
 
@@ -8,162 +10,298 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🔧 TextForensics Development Environment Setup${NC}"
-echo "=================================================="
+# Script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+ENV_FILE="$PROJECT_ROOT/.env"
+ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
 
-# Function to detect and use Git configuration
-setup_git_config() {
-    echo -e "${BLUE}Checking Git configuration...${NC}"
+echo -e "${BLUE}🔧 TextForensics Smart Development Setup${NC}"
+echo -e "${BLUE}=======================================${NC}"
+echo ""
 
-    # Check if git config exists
-    if [ -f "$HOME/.gitconfig" ]; then
-        echo -e "${GREEN}✅ Found existing Git config at $HOME/.gitconfig${NC}"
+# Function to detect existing git configuration
+detect_git_config() {
+    local git_name=""
+    local git_email=""
 
-        # Extract current settings
-        GIT_USER_NAME=$(git config --global user.name)
-        GIT_USER_EMAIL=$(git config --global user.email)
+    # Try to get from global git config
+    if command -v git >/dev/null 2>&1; then
+        git_name=$(git config --global user.name 2>/dev/null || echo "")
+        git_email=$(git config --global user.email 2>/dev/null || echo "")
+    fi
 
-        if [ -z "$GIT_USER_NAME" ] || [ -z "$GIT_USER_EMAIL" ]; then
-            echo -e "${YELLOW}⚠️  Git config exists but name or email is missing.${NC}"
+    if [[ -n "$git_name" && -n "$git_email" ]]; then
+        echo -e "${GREEN}✅ Found existing git configuration:${NC}"
+        echo -e "   Name:  ${CYAN}$git_name${NC}"
+        echo -e "   Email: ${CYAN}$git_email${NC}"
+        echo ""
 
-            # Prompt for missing information
-            if [ -z "$GIT_USER_NAME" ]; then
-                read -p "Enter your full name for Git: " GIT_USER_NAME
-                git config --global user.name "$GIT_USER_NAME"
-            fi
+        read -p "$(echo -e "${YELLOW}Use this configuration? (Y/n): ${NC}")" -n 1 -r
+        echo ""
 
-            if [ -z "$GIT_USER_EMAIL" ]; then
-                read -p "Enter your email for Git: " GIT_USER_EMAIL
-                git config --global user.email "$GIT_USER_EMAIL"
-            fi
-
-            echo -e "${GREEN}✅ Git config updated.${NC}"
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            get_git_config_interactive
         else
-            echo -e "${GREEN}  Name:  ${GIT_USER_NAME}${NC}"
-            echo -e "${GREEN}  Email: ${GIT_USER_EMAIL}${NC}"
+            GIT_USER_NAME="$git_name"
+            GIT_USER_EMAIL="$git_email"
         fi
     else
-        echo -e "${YELLOW}⚠️  No Git config found. Setting up new configuration.${NC}"
-
-        # Prompt for Git information
-        read -p "Enter your full name for Git: " GIT_USER_NAME
-        read -p "Enter your email for Git: " GIT_USER_EMAIL
-
-        # Set up Git config
-        git config --global user.name "$GIT_USER_NAME"
-        git config --global user.email "$GIT_USER_EMAIL"
-
-        echo -e "${GREEN}✅ Git config created.${NC}"
+        echo -e "${YELLOW}⚠️  No existing git configuration found${NC}"
+        get_git_config_interactive
     fi
-
-    # Add the workspace directory to Git's safe directories list
-    # This prevents "dubious ownership" errors in Docker
-    echo -e "${BLUE}Adding workspace to Git safe directories...${NC}"
-    git config --global --add safe.directory /workspace
-    git config --global --add safe.directory '*'
-    echo -e "${GREEN}✅ Git safe directories configured${NC}"
-
-    # Export for Docker build
-    export GIT_USER_NAME
-    export GIT_USER_EMAIL
 }
 
-# Function to set up SSH keys
-setup_ssh_keys() {
-    echo -e "\n${BLUE}Checking SSH configuration...${NC}"
+# Function to get git config interactively
+get_git_config_interactive() {
+    echo -e "${BLUE}📝 Please enter your git configuration:${NC}"
 
-    SSH_DIR="$HOME/.ssh"
-
-    # Create SSH directory if it doesn't exist
-    if [ ! -d "$SSH_DIR" ]; then
-        mkdir -p "$SSH_DIR"
-        chmod 700 "$SSH_DIR"
-        echo -e "${GREEN}✅ Created SSH directory${NC}"
-    fi
-
-    # Check for existing SSH keys
-    if [ -f "$SSH_DIR/id_ed25519" ] || [ -f "$SSH_DIR/id_rsa" ]; then
-        echo -e "${GREEN}✅ Found existing SSH keys${NC}"
-
-        # Check if GitHub is in known_hosts
-        if ! grep -q "github.com" "$SSH_DIR/known_hosts" 2>/dev/null; then
-            echo -e "${YELLOW}⚠️  Adding GitHub to known_hosts${NC}"
-            ssh-keyscan -H github.com >> "$SSH_DIR/known_hosts"
+    while [[ -z "$GIT_USER_NAME" ]]; do
+        read -p "$(echo -e "${CYAN}Full Name: ${NC}")" GIT_USER_NAME
+        if [[ -z "$GIT_USER_NAME" ]]; then
+            echo -e "${RED}❌ Name cannot be empty. Please try again.${NC}"
         fi
-    else
-        echo -e "${YELLOW}⚠️  No SSH keys found. Generating new keys...${NC}"
+    done
 
-        # Generate Ed25519 key (more secure and recommended)
-        ssh-keygen -t ed25519 -C "$GIT_USER_EMAIL" -f "$SSH_DIR/id_ed25519" -N ""
+    while [[ -z "$GIT_USER_EMAIL" ]]; do
+        read -p "$(echo -e "${CYAN}Email Address: ${NC}")" GIT_USER_EMAIL
+        if [[ -z "$GIT_USER_EMAIL" ]]; then
+            echo -e "${RED}❌ Email cannot be empty. Please try again.${NC}"
+        elif [[ ! "$GIT_USER_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+            echo -e "${RED}❌ Invalid email format. Please try again.${NC}"
+            GIT_USER_EMAIL=""
+        fi
+    done
 
-        # Set proper permissions
-        chmod 600 "$SSH_DIR/id_ed25519"
-        chmod 644 "$SSH_DIR/id_ed25519.pub"
-
-        # Add GitHub to known_hosts
-        ssh-keyscan -H github.com >> "$SSH_DIR/known_hosts"
-
-        echo -e "${GREEN}✅ SSH keys generated${NC}"
-
-        # Display public key
-        echo -e "\n${BLUE}Your SSH public key (add this to GitHub):${NC}"
-        echo "=========================================================="
-        cat "$SSH_DIR/id_ed25519.pub"
-        echo "=========================================================="
-        echo -e "${YELLOW}ℹ️  Add this key to your GitHub account at: https://github.com/settings/keys${NC}"
-    fi
-
-    # Start SSH agent and add key
-    eval "$(ssh-agent -s)" > /dev/null
-    ssh-add "$SSH_DIR/id_ed25519" 2>/dev/null || ssh-add "$SSH_DIR/id_rsa" 2>/dev/null || true
-
-    echo -e "${GREEN}✅ SSH setup complete${NC}"
+    echo ""
+    echo -e "${GREEN}✅ Configuration entered:${NC}"
+    echo -e "   Name:  ${CYAN}$GIT_USER_NAME${NC}"
+    echo -e "   Email: ${CYAN}$GIT_USER_EMAIL${NC}"
 }
 
-# Function to update environment variables for Docker build
+# Function to update or create .env file
 update_env_file() {
-    echo -e "\n${BLUE}Updating environment variables...${NC}"
+    echo -e "${BLUE}📄 Managing .env file...${NC}"
 
-    ENV_FILE=".env"
-
-    # Create .env file if it doesn't exist
-    if [ ! -f "$ENV_FILE" ]; then
-        if [ -f ".env.base" ]; then
-            cp .env.base "$ENV_FILE"
-            echo -e "${GREEN}✅ Created .env file from .env.base${NC}"
+    # Create .env from example if it doesn't exist
+    if [[ ! -f "$ENV_FILE" ]]; then
+        if [[ -f "$ENV_EXAMPLE" ]]; then
+            echo -e "${YELLOW}📋 Creating .env from .env.example${NC}"
+            cp "$ENV_EXAMPLE" "$ENV_FILE"
         else
-            touch "$ENV_FILE"
-            echo -e "${YELLOW}⚠️  Created empty .env file${NC}"
+            echo -e "${RED}❌ .env.example not found. Creating minimal .env${NC}"
+            cat > "$ENV_FILE" << EOF
+# TextForensics Environment Configuration
+VERSION=dev
+DOCKER_REGISTRY=
+JUPYTER_PORT=8888
+TENSORBOARD_PORT=6006
+API_PORT=8000
+WANDB_PORT=8097
+GRADIO_PORT=7860
+
+# User permissions for Docker
+UID=1000
+GID=1000
+
+# Git Configuration
+GIT_USER_NAME=""
+GIT_USER_EMAIL=""
+EOF
         fi
     fi
 
-    # Add or update Git config variables
-    if grep -q "GIT_USER_NAME=" "$ENV_FILE"; then
-        sed -i "s/GIT_USER_NAME=.*/GIT_USER_NAME=\"$GIT_USER_NAME\"/" "$ENV_FILE"
+    # Update git configuration in .env file
+    if grep -q "^GIT_USER_NAME=" "$ENV_FILE"; then
+        sed -i "s/^GIT_USER_NAME=.*/GIT_USER_NAME=\"$GIT_USER_NAME\"/" "$ENV_FILE"
     else
         echo "GIT_USER_NAME=\"$GIT_USER_NAME\"" >> "$ENV_FILE"
     fi
 
-    if grep -q "GIT_USER_EMAIL=" "$ENV_FILE"; then
-        sed -i "s/GIT_USER_EMAIL=.*/GIT_USER_EMAIL=\"$GIT_USER_EMAIL\"/" "$ENV_FILE"
+    if grep -q "^GIT_USER_EMAIL=" "$ENV_FILE"; then
+        sed -i "s/^GIT_USER_EMAIL=.*/GIT_USER_EMAIL=\"$GIT_USER_EMAIL\"/" "$ENV_FILE"
     else
         echo "GIT_USER_EMAIL=\"$GIT_USER_EMAIL\"" >> "$ENV_FILE"
     fi
 
-    echo -e "${GREEN}✅ Environment variables updated in $ENV_FILE${NC}"
+    # Update UID/GID if not set correctly
+    local current_uid=$(id -u)
+    local current_gid=$(id -g)
+
+    if grep -q "^UID=" "$ENV_FILE"; then
+        sed -i "s/^UID=.*/UID=$current_uid/" "$ENV_FILE"
+    else
+        echo "UID=$current_uid" >> "$ENV_FILE"
+    fi
+
+    if grep -q "^GID=" "$ENV_FILE"; then
+        sed -i "s/^GID=.*/GID=$current_gid/" "$ENV_FILE"
+    else
+        echo "GID=$current_gid" >> "$ENV_FILE"
+    fi
+
+    echo -e "${GREEN}✅ .env file updated successfully${NC}"
 }
 
-# Main execution
-setup_git_config
-setup_ssh_keys
-update_env_file
+# Function to test SSH connection to GitHub
+test_github_connection() {
+    echo -e "${BLUE}🧪 Testing SSH connection to GitHub...${NC}"
 
-echo -e "\n${GREEN}✅ Development environment setup complete!${NC}"
-echo -e "\n${BLUE}🚀 Next steps:${NC}"
-echo "1. Run: make build-dev  # Build development environment"
-echo "2. Run: make dev        # Start development environment"
-echo "3. Run: make shell      # Get interactive shell"
+    # Try SSH connection with timeout
+    if timeout 10 ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        echo -e "${GREEN}✅ SSH connection to GitHub successful!${NC}"
+        return 0
+    else
+        echo -e "${YELLOW}⚠️  SSH connection failed or key not added to GitHub${NC}"
+        return 1
+    fi
+}
 
-echo -e "\n${YELLOW}ℹ️  Your Git and SSH configurations will be automatically mounted into the container.${NC}"
+# Function to setup SSH keys
+setup_ssh_keys() {
+    echo -e "${BLUE}🔑 Setting up SSH keys...${NC}"
+
+    local ssh_dir="$HOME/.ssh"
+    mkdir -p "$ssh_dir"
+
+    # Add GitHub to known_hosts if not present
+    if ! grep -q "github.com" "$ssh_dir/known_hosts" 2>/dev/null; then
+        echo -e "${BLUE}🌐 Adding GitHub to known hosts...${NC}"
+        ssh-keyscan -H github.com >> "$ssh_dir/known_hosts" 2>/dev/null
+    fi
+
+    # Check for existing SSH keys
+    if [[ -f "$ssh_dir/id_ed25519" || -f "$ssh_dir/id_rsa" ]]; then
+        echo -e "${GREEN}✅ Found existing SSH keys${NC}"
+
+        # Display the public key
+        if [[ -f "$ssh_dir/id_ed25519.pub" ]]; then
+            echo -e "${CYAN}Ed25519 public key:${NC}"
+            cat "$ssh_dir/id_ed25519.pub"
+        elif [[ -f "$ssh_dir/id_rsa.pub" ]]; then
+            echo -e "${CYAN}RSA public key:${NC}"
+            cat "$ssh_dir/id_rsa.pub"
+        fi
+
+        echo ""
+
+        # Test if existing keys work with GitHub
+        if test_github_connection; then
+            echo -e "${GREEN}✅ Existing SSH keys work with GitHub${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}⚠️  Existing keys don't work with GitHub${NC}"
+            echo -e "${BLUE}This could mean:${NC}"
+            echo -e "  • Key not added to GitHub yet"
+            echo -e "  • Different key needed"
+            echo -e "  • Network connectivity issues"
+            echo ""
+
+            read -p "$(echo -e "${YELLOW}Generate new SSH key? (Y/n): ${NC}")" -n 1 -r
+            echo ""
+
+            if [[ $REPLY =~ ^[Nn]$ ]]; then
+                echo -e "${CYAN}💡 Manual setup: Add your public key to GitHub and test with:${NC}"
+                echo -e "   ${BLUE}ssh -T git@github.com${NC}"
+                return 0
+            fi
+        fi
+    fi
+
+    # Generate new SSH key
+    echo -e "${BLUE}🔐 Generating new SSH key...${NC}"
+
+    local key_file="$ssh_dir/id_ed25519"
+    ssh-keygen -t ed25519 -C "$GIT_USER_EMAIL" -f "$key_file" -N ""
+    chmod 700 "$ssh_dir"
+    chmod 600 "$key_file"
+    chmod 644 "${key_file}.pub"
+
+    # Display public key
+    echo -e "${GREEN}✅ SSH key generated successfully!${NC}"
+    echo ""
+    echo -e "${PURPLE}🔑 Your public SSH key (add this to GitHub):${NC}"
+    echo -e "${CYAN}==========================================${NC}"
+    cat "${key_file}.pub"
+    echo -e "${CYAN}==========================================${NC}"
+    echo ""
+}
+
+# Function to configure git globally if not set
+configure_git_global() {
+    local current_name=$(git config --global user.name 2>/dev/null || echo "")
+    local current_email=$(git config --global user.email 2>/dev/null || echo "")
+
+    if [[ -z "$current_name" || -z "$current_email" ]]; then
+        echo -e "${BLUE}⚙️  Configuring global git settings...${NC}"
+        git config --global user.name "$GIT_USER_NAME"
+        git config --global user.email "$GIT_USER_EMAIL"
+        echo -e "${GREEN}✅ Global git configuration updated${NC}"
+    else
+        echo -e "${GREEN}✅ Global git configuration already set${NC}"
+    fi
+}
+
+# Function to test SSH connection
+test_ssh_connection() {
+    echo -e "${BLUE}🧪 Final SSH connection test...${NC}"
+
+    if test_github_connection; then
+        echo -e "${GREEN}🎉 All SSH setup complete and working!${NC}"
+    else
+        echo -e "${CYAN}💡 Next: Add your public key to GitHub and test with:${NC}"
+        echo -e "   ${BLUE}ssh -T git@github.com${NC}"
+    fi
+}
+
+# Function to show next steps
+show_next_steps() {
+    echo ""
+    echo -e "${PURPLE}🚀 Setup Complete! Next Steps:${NC}"
+    echo -e "${PURPLE}=============================${NC}"
+    echo -e "${CYAN}1. Add your SSH public key to GitHub:${NC}"
+    echo -e "   ${BLUE}https://github.com/settings/ssh/new${NC}"
+    echo ""
+    echo -e "${CYAN}2. Test SSH connection:${NC}"
+    echo -e "   ${BLUE}ssh -T git@github.com${NC}"
+    echo ""
+    echo -e "${CYAN}3. Build and start development environment:${NC}"
+    echo -e "   ${BLUE}make build-dev${NC}"
+    echo -e "   ${BLUE}make dev${NC}"
+    echo ""
+    echo -e "${CYAN}4. Access development services:${NC}"
+    echo -e "   📊 Jupyter Lab: ${BLUE}http://localhost:8888${NC}"
+    echo -e "   📈 TensorBoard: ${BLUE}http://localhost:6006${NC}"
+    echo -e "   🔍 Wandb: ${BLUE}http://localhost:8097${NC}"
+    echo ""
+}
+
+# Main execution flow
+main() {
+    cd "$PROJECT_ROOT"
+
+    # Step 1: Detect or get git configuration
+    detect_git_config
+
+    # Step 2: Update .env file
+    update_env_file
+
+    # Step 3: Setup SSH keys
+    setup_ssh_keys
+
+    # Step 4: Configure global git if needed
+    configure_git_global
+
+    # Step 5: Test SSH connection
+    test_ssh_connection
+
+    # Step 6: Show next steps
+    show_next_steps
+}
+
+# Run main function
+main "$@"

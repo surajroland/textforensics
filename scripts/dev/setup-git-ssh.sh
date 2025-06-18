@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$PROJECT_ROOT/.env"
-ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
+ENV_EXAMPLE="$PROJECT_ROOT/.env.base"
 
 echo -e "${BLUE}🔧 TextForensics Smart Development Setup${NC}"
 echo -e "${BLUE}=======================================${NC}"
@@ -90,10 +90,10 @@ update_env_file() {
     # Create .env from example if it doesn't exist
     if [[ ! -f "$ENV_FILE" ]]; then
         if [[ -f "$ENV_EXAMPLE" ]]; then
-            echo -e "${YELLOW}📋 Creating .env from .env.example${NC}"
+            echo -e "${YELLOW}📋 Creating .env from .env.base${NC}"
             cp "$ENV_EXAMPLE" "$ENV_FILE"
         else
-            echo -e "${RED}❌ .env.example not found. Creating minimal .env${NC}"
+            echo -e "${RED}❌ .env.base not found. Creating minimal .env${NC}"
             cat > "$ENV_FILE" << EOF
 # TextForensics Environment Configuration
 VERSION=dev
@@ -108,7 +108,7 @@ GRADIO_PORT=7860
 UID=1000
 GID=1000
 
-# Git Configuration
+# Git user configuration
 GIT_USER_NAME=""
 GIT_USER_EMAIL=""
 EOF
@@ -119,6 +119,7 @@ EOF
     if grep -q "^GIT_USER_NAME=" "$ENV_FILE"; then
         sed -i "s/^GIT_USER_NAME=.*/GIT_USER_NAME=\"$GIT_USER_NAME\"/" "$ENV_FILE"
     else
+        echo "" >> "$ENV_FILE"
         echo "GIT_USER_NAME=\"$GIT_USER_NAME\"" >> "$ENV_FILE"
     fi
 

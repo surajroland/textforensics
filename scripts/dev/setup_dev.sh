@@ -24,7 +24,7 @@ echo "✅ Docker and GPU support detected"
 # Create environment file if it doesn't exist
 if [ ! -f .env ]; then
     echo "📝 Creating .env file from template..."
-    cp .env.example .env
+    cp .env.base .env
     echo "⚠️  Please edit .env with your API keys before continuing"
 fi
 

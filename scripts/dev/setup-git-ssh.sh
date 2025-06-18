@@ -130,9 +130,9 @@ update_env_file() {
 
     # Create .env file if it doesn't exist
     if [ ! -f "$ENV_FILE" ]; then
-        if [ -f ".env.example" ]; then
-            cp .env.example "$ENV_FILE"
-            echo -e "${GREEN}✅ Created .env file from .env.example${NC}"
+        if [ -f ".env.base" ]; then
+            cp .env.base "$ENV_FILE"
+            echo -e "${GREEN}✅ Created .env file from .env.base${NC}"
         else
             touch "$ENV_FILE"
             echo -e "${YELLOW}⚠️  Created empty .env file${NC}"

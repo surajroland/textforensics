@@ -3,6 +3,7 @@ services:
   textforensics-dev:
     image: ${DOCKER_REGISTRY:-localhost}/textforensics:${VERSION:-dev}
     container_name: textforensics-dev
+    user: "${UID:-1000}:${GID:-1000}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,6 +13,8 @@ services:
         - GIT_USER_NAME=${GIT_USER_NAME}
         - GIT_USER_EMAIL=${GIT_USER_EMAIL}
         - SETUP_DEV_CONFIG=true
+        - USER_ID=${UID:-1000}
+        - GROUP_ID=${GID:-1000}
     deploy:
       resources:
         reservations:
@@ -32,13 +35,13 @@ services:
       - TORCH_CUDNN_V8_API_ENABLED=1
     volumes:
       - .:/workspace
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-      - ${HOME}/.ssh:/root/.ssh:rw
-      - nvidia_cache:/root/.cache/nvidia
-      - huggingface_cache:/root/.cache/huggingface
-      - wandb_cache:/root/.cache/wandb
-      - jupyter_data:/root/.jupyter
-      - bash_history:/root/.bash_history
+      - ${HOME}/.gitconfig:/home/appuser/.gitconfig:ro
+      - ${HOME}/.ssh:/home/appuser/.ssh:rw
+      - nvidia_cache:/home/appuser/.cache/nvidia
+      - huggingface_cache:/home/appuser/.cache/huggingface
+      - wandb_cache:/home/appuser/.cache/wandb
+      - jupyter_data:/home/appuser/.jupyter
+      - bash_history:/home/appuser/.bash_history
       - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker
     ports:
       - "${JUPYTER_PORT:-8888}:8888"

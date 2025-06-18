@@ -10,6 +10,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GIT_USER_NAME
 ARG GIT_USER_EMAIL
 ARG SETUP_DEV_CONFIG=true
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 
 # Set environment variables for optimal GPU usage
 ENV CUDA_VISIBLE_DEVICES=0
@@ -60,12 +62,20 @@ RUN apt-get update && apt-get install -y \
     texlive-xetex \
     texlive-fonts-recommended \
     texlive-plain-generic \
+    # Sudo for user management
+    sudo \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 # Set Python 3.12 as default
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# Create non-root user for development
+RUN groupadd -g $GROUP_ID appuser && \
+    useradd -u $USER_ID -g appuser -m -s /bin/bash appuser && \
+    usermod -aG sudo appuser && \
+    echo 'appuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Install Node.js for Jupyter Lab extensions
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -147,13 +157,13 @@ RUN curl -L https://github.com/starship/starship/releases/latest/download/starsh
     tar xzf starship.tar.gz && \
     mv starship /usr/local/bin/ && \
     rm starship.tar.gz && \
-    echo 'eval "$(starship init bash)"' >> /root/.bashrc
+    echo 'eval "$(starship init bash)"' >> /home/appuser/.bashrc
 
-# Set up Jupyter Lab configuration
-RUN jupyter lab --generate-config && \
-    echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.allow_root = True" >> /root/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_lab_config.py
+# Set up Jupyter Lab configuration for appuser
+RUN sudo -u appuser jupyter lab --generate-config && \
+    echo "c.ServerApp.ip = '0.0.0.0'" >> /home/appuser/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.allow_root = True" >> /home/appuser/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.open_browser = False" >> /home/appuser/.jupyter/jupyter_lab_config.py
 
 # Expose ports for Jupyter, TensorBoard, wandb, API
 EXPOSE 8888 6006 8097 8000 7860
@@ -189,34 +199,36 @@ RUN pip install \
 # Development Git and SSH setup with automation - only runs if SSH keys aren't mounted
 RUN if [ "$SETUP_DEV_CONFIG" = "true" ]; then \
         # Check if SSH keys are already mounted
-        if [ ! -f "/root/.ssh/id_ed25519" ] && [ ! -f "/root/.ssh/id_rsa" ]; then \
+        if [ ! -f "/home/appuser/.ssh/id_ed25519" ] && [ ! -f "/home/appuser/.ssh/id_rsa" ]; then \
             echo -e "\nNo SSH keys found. Generating new keys..." && \
             # Generate SSH key for development \
-            mkdir -p /root/.ssh && \
-            ssh-keygen -t ed25519 -C "${GIT_USER_EMAIL:-dev@example.com}" -f /root/.ssh/id_ed25519 -N "" && \
-            chmod 700 /root/.ssh && \
-            chmod 600 /root/.ssh/* && \
+            mkdir -p /home/appuser/.ssh && \
+            ssh-keygen -t ed25519 -C "${GIT_USER_EMAIL:-dev@example.com}" -f /home/appuser/.ssh/id_ed25519 -N "" && \
+            chmod 700 /home/appuser/.ssh && \
+            chmod 600 /home/appuser/.ssh/* && \
+            chown -R appuser:appuser /home/appuser/.ssh && \
             \
             # Add GitHub to known_hosts \
-            ssh-keyscan -H github.com >> /root/.ssh/known_hosts && \
+            ssh-keyscan -H github.com >> /home/appuser/.ssh/known_hosts && \
+            chown appuser:appuser /home/appuser/.ssh/known_hosts && \
             \
             # Display the public key \
             echo -e "\nSSH key generated! Add this public key to GitHub:" && \
             echo "==========================================" && \
-            cat /root/.ssh/id_ed25519.pub && \
+            cat /home/appuser/.ssh/id_ed25519.pub && \
             echo "=========================================="; \
         else \
             echo -e "\nUsing existing SSH keys mounted from host."; \
         fi; \
         \
         # Check if Git config is already mounted
-        if [ ! -f "/root/.gitconfig" ]; then \
+        if [ ! -f "/home/appuser/.gitconfig" ]; then \
             # Only set Git config if we have the values
             if [ -n "$GIT_USER_NAME" ] && [ -n "$GIT_USER_EMAIL" ]; then \
                 echo -e "\nNo Git config found. Creating new config..." && \
-                # Setup Git configuration \
-                git config --global user.name "$GIT_USER_NAME" && \
-                git config --global user.email "$GIT_USER_EMAIL" && \
+                # Setup Git configuration for appuser \
+                sudo -u appuser git config --global user.name "$GIT_USER_NAME" && \
+                sudo -u appuser git config --global user.email "$GIT_USER_EMAIL" && \
                 echo -e "\nGit config created with:"; \
                 echo "Name:  $GIT_USER_NAME"; \
                 echo "Email: $GIT_USER_EMAIL"; \
@@ -231,12 +243,17 @@ RUN if [ "$SETUP_DEV_CONFIG" = "true" ]; then \
         # Create SSH agent startup script \
         echo '#!/bin/bash' > /usr/local/bin/start-ssh-agent.sh && \
         echo 'eval "$(ssh-agent -s)" > /dev/null' >> /usr/local/bin/start-ssh-agent.sh && \
-        echo 'ssh-add /root/.ssh/id_ed25519 2>/dev/null || ssh-add /root/.ssh/id_rsa 2>/dev/null || true' >> /usr/local/bin/start-ssh-agent.sh && \
+        echo 'ssh-add ~/.ssh/id_ed25519 2>/dev/null || ssh-add ~/.ssh/id_rsa 2>/dev/null || true' >> /usr/local/bin/start-ssh-agent.sh && \
         chmod +x /usr/local/bin/start-ssh-agent.sh && \
         \
-        # Add to bashrc for automatic SSH agent \
-        echo 'source /usr/local/bin/start-ssh-agent.sh' >> /root/.bashrc; \
+        # Add to bashrc for automatic SSH agent for appuser \
+        echo 'source /usr/local/bin/start-ssh-agent.sh' >> /home/appuser/.bashrc && \
+        echo 'eval "$(starship init bash)"' >> /home/appuser/.bashrc; \
     fi
+
+# Set proper ownership of workspace and switch to non-root user
+RUN chown -R appuser:appuser /workspace
+USER appuser
 
 # Default command for development
 CMD ["bash"]

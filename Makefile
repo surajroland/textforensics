@@ -116,21 +116,27 @@ build-dev:
 	@echo "$(BLUE)🔨 Building development image...$(NC)"
 	DOCKER_BUILDKIT=1 docker build --target development \
 		-t $(DOCKER_REGISTRY)/textforensics:$(VERSION) \
-		--build-arg BUILDKIT_INLINE_CACHE=1 .
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg USER_ID=$(shell id -u) \
+		--build-arg GROUP_ID=$(shell id -g) .
 	@echo "$(GREEN)✅ Development image built: $(DOCKER_REGISTRY)/textforensics:$(VERSION)$(NC)"
 
 build-prod:
 	@echo "$(BLUE)🔨 Building production image...$(NC)"
 	DOCKER_BUILDKIT=1 docker build --target production \
 		-t $(DOCKER_REGISTRY)/textforensics:$(VERSION)-prod \
-		--build-arg BUILDKIT_INLINE_CACHE=1 .
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg USER_ID=$(shell id -u) \
+		--build-arg GROUP_ID=$(shell id -g) .
 	@echo "$(GREEN)✅ Production image built: $(DOCKER_REGISTRY)/textforensics:$(VERSION)-prod$(NC)"
 
 build-train:
 	@echo "$(BLUE)🔨 Building training image...$(NC)"
 	DOCKER_BUILDKIT=1 docker build --target training \
 		-t $(DOCKER_REGISTRY)/textforensics:$(VERSION)-train \
-		--build-arg BUILDKIT_INLINE_CACHE=1 .
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg USER_ID=$(shell id -u) \
+		--build-arg GROUP_ID=$(shell id -g) .
 	@echo "$(GREEN)✅ Training image built: $(DOCKER_REGISTRY)/textforensics:$(VERSION)-train$(NC)"
 
 # Service management

@@ -15,7 +15,7 @@ jobs:
 
     - name: Set up environment
       run: |
-        cp .env.example .env
+        cp .env.base .env
         echo "WANDB_API_KEY=${{ secrets.WANDB_API_KEY }}" >> .env
         echo "HF_TOKEN=${{ secrets.HF_TOKEN }}" >> .env
 

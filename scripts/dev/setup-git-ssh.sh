@@ -39,17 +39,11 @@ detect_git_config() {
         echo -e "${GREEN}✅ Found existing git configuration:${NC}"
         echo -e "   Name:  ${CYAN}$git_name${NC}"
         echo -e "   Email: ${CYAN}$git_email${NC}"
+        echo -e "${GREEN}✅ Using detected configuration${NC}"
         echo ""
 
-        read -p "$(echo -e "${YELLOW}Use this configuration? (Y/n): ${NC}")" -n 1 -r
-        echo ""
-
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            get_git_config_interactive
-        else
-            GIT_USER_NAME="$git_name"
-            GIT_USER_EMAIL="$git_email"
-        fi
+        GIT_USER_NAME="$git_name"
+        GIT_USER_EMAIL="$git_email"
     else
         echo -e "${YELLOW}⚠️  No existing git configuration found${NC}"
         get_git_config_interactive

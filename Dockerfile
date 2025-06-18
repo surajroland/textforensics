@@ -71,10 +71,25 @@ RUN apt-get update && apt-get install -y \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
 
-# Create non-root user for development
-RUN groupadd -g $GROUP_ID appuser && \
-    useradd -u $USER_ID -g appuser -m -s /bin/bash appuser && \
-    usermod -aG sudo appuser && \
+# User Management Strategy for Development Containers
+#
+# Challenge: Container files created as root cause permission issues on host
+# - VS Code can't edit files (EACCES errors)
+# - Git operations fail due to ownership mismatches
+# - Developer workflow friction
+#
+# Solution: Create user with matching host UID/GID
+# - Files created in container have correct host ownership
+# - Seamless file editing between host and container
+# - Consistent permissions across team members
+#
+# Implementation: Conditional user creation to handle base image conflicts
+# - Check if UID/GID already exist (common in NVIDIA images)
+# - Create only if needed, gracefully handle conflicts
+# - Fallback to existing users when IDs match
+RUN if ! getent group $GROUP_ID >/dev/null; then groupadd -g $GROUP_ID appuser; fi && \
+    if ! getent passwd $USER_ID >/dev/null; then useradd -u $USER_ID -g $GROUP_ID -m -s /bin/bash appuser; fi && \
+    usermod -aG sudo appuser 2>/dev/null || true && \
     echo 'appuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Install Node.js for Jupyter Lab extensions

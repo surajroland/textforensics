@@ -246,8 +246,20 @@
   },
 
   // Lifecycle commands
-  "postCreateCommand": "bash -c 'echo \"🚀 TextForensics GPU development environment ready! RTX 5070 Ti detected.\" && echo \"📦 Installing pre-commit hooks...\" && pre-commit install --install-hooks && echo \"✅ Environment setup complete!\"'",
-  "postStartCommand": "echo '🔥 Container started! GPU status:' && python -c 'import torch; print(f\"CUDA: {torch.cuda.is_available()}\")'",
+  "postCreateCommand": [
+    "bash", "-c",
+    "git config --global --add safe.directory '*' && \\
+     echo '🚀 Git safe directory configured' && \\
+     echo '🚀 TextForensics GPU development environment ready! RTX 5070 Ti detected.' && \\
+     echo '📦 Installing pre-commit hooks...' && \\
+     pre-commit install --install-hooks && \\
+     echo '✅ Environment setup complete!'"
+  ],
+  "postStartCommand": [
+    "bash", "-c",
+    "echo '🔥 Container started! GPU status:' && \\
+     python -c 'import torch; print(f\"CUDA: {torch.cuda.is_available()}\")'"
+  ],
 
   // Development container features
   "features": {
@@ -263,8 +275,7 @@
       "installZsh": false,
       "configureZshAsDefaultShell": false,
       "installOhMyZsh": false,
-      "upgradePackages": true,
-      "username": "root"
+      "upgradePackages": true
     }
   },
 
@@ -280,7 +291,7 @@
 
   // Security and permissions
   "privileged": false,
-  "remoteUser": "root",
+  "remoteUser": "ubuntu",
   "updateRemoteUserUID": false,
 
   // Development workflow

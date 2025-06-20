@@ -25,6 +25,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        // Container & Remote Development
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode-remote.remote-ssh",
+        "ms-vscode-remote.asdvscode-remote-extensionpack",
+
         // Core Python Development
         "ms-python.python",
         "ms-python.vscode-pylance",
@@ -57,11 +62,6 @@
         "github.vscode-pull-request-github",
         "github.vscode-github-actions",
         "ms-vscode.vscode-github-issue-notebooks",
-
-        // Docker & DevOps
-        "ms-vscode-remote.remote-containers",
-        "ms-azuretools.vscode-docker",
-        "ms-kubernetes-tools.vscode-kubernetes-tools",
 
         // Configuration Files
         "redhat.vscode-yaml",

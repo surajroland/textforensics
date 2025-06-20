@@ -110,7 +110,7 @@ Add Classification Branch:
 ├─────────────────┤
 │ Generation Neck │ ── Transfer Head
 │ Classification  │ ── Style Classification Head
-│ Neck           │ ── Anomaly Detection Head
+│ Neck            │ ── Anomaly Detection Head
 └─────────────────┘
 ```
 

@@ -1,20 +1,75 @@
+# TextForensics Docker Compose Configuration
+# Multi-service setup for development, training, research, and API deployment
+# Uses environment variables from .env for configuration
+
 services:
-  # Main development service
+  # ==============================================================================
+  # DEVELOPMENT SERVICE - Primary development environment
+  # ==============================================================================
   textforensics-dev:
-    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
-    container_name: textforensics-dev
-    user: "${UID:-1000}:${GID:-1000}"
     build:
-      context: .
-      dockerfile: Dockerfile
-      target: development  # Multi-stage build target
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-        - GIT_USER_NAME=${GIT_USER_NAME}
-        - GIT_USER_EMAIL=${GIT_USER_EMAIL}
-        - SETUP_DEV_CONFIG=true
-        - USER_ID=${UID:-1000}
-        - GROUP_ID=${GID:-1000}
+      context: .                    # Build context is current directory
+      target: development           # Multi-stage build target
+    image: textforensics-dev:${VERSION}
+    container_name: textforensics-dev
+
+    # Volume mounts for development workflow
+    volumes:
+      - .:/workspace                              # Mount project directory
+      - ~/.ssh:/root/.ssh:ro                      # SSH keys (read-only)
+      - ~/.gitconfig:/root/.gitconfig:ro          # Git configuration
+      - bash-history:/root                        # Persist bash history
+      - textforensics-data:/workspace/data        # Project data
+      - textforensics-logs:/workspace/logs        # Application logs
+      - textforensics-models:/workspace/models    # ML models
+      - textforensics-cache:/root/.cache          # Cache directory
+      - /var/run/docker.sock:/var/run/docker.sock # Docker-in-Docker
+
+    # Port mappings for development services
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"      # Jupyter Lab
+      - "${TENSORBOARD_PORT:-6006}:6006"  # TensorBoard
+      - "${WANDB_PORT:-8097}:8097"        # Weights & Biases
+      - "${API_PORT:-8000}:8000"          # FastAPI
+      - "${GRADIO_PORT:-7860}:7860"       # Gradio UI
+
+    # Environment variables for development
+    environment:
+      - NODE_ENV=development               # Node.js environment
+      - PYTHONPATH=/workspace/src          # Python module path
+      - HYDRA_FULL_ERROR=1                # Hydra debug mode
+      - GITHUB_TOKEN=${GITHUB_TOKEN}      # GitHub API access
+      - HF_TOKEN=${HF_TOKEN}              # Hugging Face API
+      - WANDB_API_KEY=${WANDB_API_KEY}    # Weights & Biases API
+
+    # Startup command with service initialization
+    command: >
+      bash -c "
+        echo '🚀 Starting TextForensics Development Environment'
+        echo '🐚 Shell: Bash with Starship prompt'
+        echo ''
+        echo '📊 Jupyter Lab: http://localhost:${JUPYTER_PORT:-8888}'
+        echo '📈 TensorBoard: http://localhost:${TENSORBOARD_PORT:-6006}'
+        echo '🔍 Wandb: http://localhost:${WANDB_PORT:-8097}'
+        echo ''
+        jupyter lab --ip=0.0.0.0 --port=${JUPYTER_PORT:-8888} --no-browser --allow-root &
+        tensorboard --logdir=outputs/logs --host=0.0.0.0 --port=${TENSORBOARD_PORT:-6006} &
+        exec bash
+      "
+
+    # Container configuration
+    stdin_open: true                     # Keep STDIN open
+    tty: true                           # Allocate pseudo-TTY
+    restart: unless-stopped             # Restart policy
+
+    # Health monitoring
+    healthcheck:
+      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    # GPU resource allocation
     deploy:
       resources:
         reservations:
@@ -22,150 +77,84 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+  # ==============================================================================
+  # TRAINING SERVICE - Optimized for ML training workloads
+  # ==============================================================================
+  textforensics-train:
+    build:
+      context: .
+      target: training                   # Training-optimized stage
+    image: textforensics-train:${VERSION}
+    container_name: textforensics-train
+    extends: textforensics-dev           # Inherit from dev service
+
+    # Training-specific environment
     environment:
-      - NODE_ENV=development
-      - CUDA_VISIBLE_DEVICES=0
-      - WANDB_API_KEY=${WANDB_API_KEY}
-      - HF_TOKEN=${HF_TOKEN}
-      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
-      - NVIDIA_VISIBLE_DEVICES=all
-      # RTX 5070 Ti optimizations
-      - TORCH_CUDA_ARCH_LIST=8.9+PTX
-      - CUDA_LAUNCH_BLOCKING=0
-      - TORCH_CUDNN_V8_API_ENABLED=1
-    volumes:
-      - .:/workspace
-      - ${HOME}/.gitconfig:${HOME}/.gitconfig:ro
-      - ${HOME}/.ssh:${HOME}/.ssh:rw
-      - nvidia_cache:${HOME}/.cache/nvidia
-      - huggingface_cache:${HOME}/.cache/huggingface
-      - wandb_cache:${HOME}/.cache/wandb
-      - jupyter_data:${HOME}/.jupyter
-      - bash_history:${HOME}/.bash_history
-      - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker
+      - TORCH_CUDNN_BENCHMARK=1         # Enable cuDNN benchmarking
+
+    # Training entry point
+    command: python scripts/training/train.py
+    profiles: ["training"]              # Only start with --profile training
+
+  # ==============================================================================
+  # RESEARCH SERVICE - Jupyter-only environment for experimentation
+  # ==============================================================================
+  textforensics-research:
+    build:
+      context: .
+      target: development                # Use development stage
+    image: textforensics-dev:${VERSION}
+    container_name: textforensics-research
+    extends: textforensics-dev           # Inherit configuration
+
+    # Only expose Jupyter port
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
-      - "${TENSORBOARD_PORT:-6006}:6006"
-      - "${WANDB_PORT:-8097}:8097"
-      - "${API_PORT:-8000}:8000"
-      - "${GRADIO_PORT:-7860}:7860"
-    networks:
-      - textforensics-network
-    restart: unless-stopped
-    stdin_open: true
-    tty: true
-    healthcheck:
-      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    command: >
-      bash -c "
-        echo '🚀 Starting TextForensics Development Environment'
-        echo '💻 Hardware: Ryzen 9 9950X3D + RTX 5070 Ti'
-        echo '🐳 Container: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}'
-        echo '🐚 Shell: Bash with Starship prompt'
-        echo ''
-        echo '📊 Jupyter Lab: http://localhost:${JUPYTER_PORT:-8888}'
-        echo '📈 TensorBoard: http://localhost:${TENSORBOARD_PORT:-6006}'
-        echo '🔍 Wandb: http://localhost:${WANDB_PORT:-8097}'
-        echo ''
-        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
-        tensorboard --logdir=outputs/logs --host=0.0.0.0 --port=6006 &
-        exec bash
-      "
 
-  # Training service for production workloads
-  textforensics-trainer:
-    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
-    container_name: textforensics-trainer
-    extends: textforensics-dev
-    environment:
-      - NODE_ENV=production
-      - CUDA_VISIBLE_DEVICES=all
-      - NCCL_DEBUG=INFO
-      - TORCH_DISTRIBUTED_DEBUG=INFO
+    # Jupyter-only command
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    profiles: ["research"]              # Only start with --profile research
+
+  # ==============================================================================
+  # API SERVICE - Production API deployment
+  # ==============================================================================
+  textforensics-api:
+    build:
+      context: .
+      target: production                 # Production-optimized stage
+    image: textforensics-api:${VERSION}
+    container_name: textforensics-api
+    extends: textforensics-dev           # Inherit base configuration
+
+    # API-specific port mapping
+    ports:
+      - "${API_PORT:-8000}:8000"
+
+    # Production API server
+    command: uvicorn textforensics.api:app --host 0.0.0.0 --port 8000
+    profiles: ["api"]                   # Only start with --profile api
+
+    # GPU allocation for inference
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              count: 1
               capabilities: [gpu]
-    command: python scripts/training/train.py
-    profiles: ["training"]  # Only start with --profile training
 
-  # API service for inference
-  textforensics-api:
-    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
-    container_name: textforensics-api
-    extends: textforensics-dev
-    environment:
-      - NODE_ENV=production
-    ports:
-      - "${API_PORT:-8000}:8000"
-    command: uvicorn textforensics.api:app --host 0.0.0.0 --port 8000 --reload
-    profiles: ["api"]  # Only start with --profile api
-    depends_on:
-      - textforensics-dev
-
-  # Jupyter-only service for research
-  textforensics-research:
-    image: ${DOCKER_REGISTRY:-textforensics}/textforensics:${VERSION:-dev}
-    container_name: textforensics-research
-    extends: textforensics-dev
-    ports:
-      - "${JUPYTER_PORT:-8888}:8888"
-    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
-    profiles: ["research"]  # Only start with --profile research
-
-  # Database for storing results (optional)
-  textforensics-db:
-    image: postgres:15-alpine
-    container_name: textforensics-db
-    environment:
-      - POSTGRES_DB=textforensics
-      - POSTGRES_USER=${DB_USER:-textforensics}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-textforensics123}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT:-5432}:5432"
-    networks:
-      - textforensics-network
-    profiles: ["database"]  # Only start with --profile database
-
-  # Redis for caching (optional)
-  textforensics-redis:
-    image: redis:7-alpine
-    container_name: textforensics-redis
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - textforensics-network
-    profiles: ["cache"]  # Only start with --profile cache
-
-# Named volumes for better data management
+# ==============================================================================
+# PERSISTENT VOLUMES - Data persistence across container restarts
+# ==============================================================================
 volumes:
-  nvidia_cache:
-    name: textforensics_nvidia_cache
-  huggingface_cache:
-    name: textforensics_huggingface_cache
-  wandb_cache:
-    name: textforensics_wandb_cache
-  jupyter_data:
-    name: textforensics_jupyter_data
-  bash_history:
-    name: textforensics_bash_history
-  postgres_data:
-    name: textforensics_postgres_data
-  redis_data:
-    name: textforensics_redis_data
+  textforensics-data:    # Project datasets and files
+  textforensics-logs:    # Application and training logs
+  textforensics-models:  # Trained model artifacts
+  textforensics-cache:   # Cache for faster rebuilds
+  bash-history:          # Shell command history
 
-# Custom network for service communication
+# Network configuration
 networks:
-  textforensics-network:
+  default:
     name: textforensics-network
-    driver: bridge

@@ -5,27 +5,18 @@ __pycache__/
 *.so
 .Python
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
-
-# PyTorch
-*.pth
-*.pt
-*.bin
 
 # Jupyter Notebooks
 .ipynb_checkpoints
@@ -35,7 +26,6 @@ profile_default/
 ipython_config.py
 
 # Environment variables
-.env
 .venv
 env/
 venv/
@@ -44,9 +34,7 @@ env.bak/
 venv.bak/
 
 # IDE
-.vscode/settings.json
-.vscode/launch.json
-.vscode/tasks.json
+.vscode/
 .idea/
 *.swp
 *.swo
@@ -99,18 +87,30 @@ htmlcov/
 dmypy.json
 
 # Docker and Development
-.env
 .env.local
 .env.*.local
-docker-compose.override.yml
-.docker/
-*.log
 
 # GPU and monitoring
 gpu_stats.json
 monitoring_logs/
 
 # Development caches
+.devcontainer/.vscode/
 .devcontainer/.cache/
 node_modules/
 .npm/
+
+# Temporary files
+*.log
+*.bak
+*.tmp
+*.temp
+
+# PyTorch
+*.pth
+*.pt
+*.bin
+
+# ML model files
+*.safetensors
+*.onnx

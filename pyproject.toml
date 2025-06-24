@@ -1,0 +1,52 @@
+# TextForensics Package Configuration
+
+[project]
+name = "textforensics"
+version = "0.1.0"
+description = "GPU-optimized text forensics ML pipeline"
+authors = [{name = "Surajit Dutta", email = "hello@surajit.de"}]
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+keywords = ["machine-learning", "text-forensics", "ai", "nlp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: POSIX :: Linux",
+]
+
+[project.urls]
+Repository = "https://github.com/surajroland/textforensics"
+
+[project.scripts]
+textforensics = "textforensics.cli:main"
+
+# Build system configuration
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Code formatting with Black
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+# Import sorting with isort
+[tool.isort]
+profile = "black"
+line_length = 88
+
+# Linting with flake8
+[tool.flake8]
+max-line-length = 88
+ignore = "E501,F401"
+
+# Type checking with mypy
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+disallow_untyped_defs = true

@@ -1,73 +1,96 @@
 #!/usr/bin/env python3
 """Setup script for TextForensics package"""
 
+import tomllib
 from pathlib import Path
+from typing import Dict, List
 
 from setuptools import find_packages, setup
 
-# Read README
+# Read README for long description
 this_directory = Path(__file__).parent
 try:
     long_description = (this_directory / "README.md").read_text()
 except FileNotFoundError:
-    long_description = "Neural Text Forensics Platform"
+    long_description = "GPU-optimized text forensics ML pipeline"
 
-# Read requirements
-requirements = []
-requirements_path = this_directory / "requirements.txt"
-if requirements_path.exists():
-    requirements = requirements_path.read_text().strip().split("\n")
+
+# Read metadata from pyproject.toml
+def get_project_metadata() -> Dict[str, str]:
+    """Read project metadata from pyproject.toml"""
+
+    with open("pyproject.toml", "rb") as f:
+        pyproject = tomllib.load(f)
+
+    project = pyproject.get("project", {})
+    poetry = pyproject.get("tool", {}).get("poetry", {})
+
+    return {
+        "version": project.get("version") or poetry["version"],
+        "description": project.get("description") or poetry["description"],
+        "author": (
+            project.get("authors", [{}])[0].get("name")
+            if project.get("authors")
+            else poetry["authors"][0].split(" <")[0]
+        ),
+        "author_email": (
+            project.get("authors", [{}])[0].get("email")
+            if project.get("authors")
+            else poetry["authors"][0].split(" <")[1].rstrip(">")
+        ),
+        "url": project.get("urls", {}).get("Repository") or poetry["repository"],
+    }
+
+
+# Helper function to read requirements files
+def read_requirements(filename: str) -> List[str]:
+    """Read requirements from requirements/ directory"""
+    requirements_path = this_directory / "requirements" / filename
+    if requirements_path.exists():
+        return requirements_path.read_text().strip().split("\n")
+    return []
+
+
+metadata = get_project_metadata()
 
 setup(
+    # Package metadata
     name="textforensics",
-    version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="Neural Text Forensics Platform",
+    version=metadata["version"],
+    author=metadata["author"],
+    author_email=metadata["author_email"],
+    description=metadata["description"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/textforensics",
+    url=metadata["url"],
+    # Package structure
     packages=find_packages(where="src"),
     package_dir={"": "src"},
+    # Classification
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Intended Audience :: Researchers",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Operating System :: POSIX :: Linux",
     ],
-    python_requires=">=3.8",
-    install_requires=requirements,
+    # Requirements
+    python_requires=">=3.12",
+    install_requires=read_requirements("base.txt"),
     extras_require={
-        "dev": [
-            "pytest>=7.0.0",
-            "pytest-cov>=4.0.0",
-            "black>=22.0.0",
-            "isort>=5.10.0",
-            "flake8>=4.0.0",
-            "mypy>=0.991",
-            "pre-commit>=2.20.0",
-        ],
-        "docs": [
-            "sphinx>=5.0.0",
-            "sphinx-rtd-theme>=1.0.0",
-            "myst-parser>=0.18.0",
-        ],
-        "notebooks": [
-            "jupyter>=1.0.0",
-            "ipywidgets>=8.0.0",
-            "matplotlib>=3.5.0",
-            "seaborn>=0.11.0",
-        ],
+        "dev": read_requirements("dev.txt"),
+        "training": read_requirements("training.txt"),
+        "api": read_requirements("api.txt"),
     },
+    # CLI entry points
     entry_points={
         "console_scripts": [
             "textforensics=textforensics.cli:main",
         ],
     },
+    # Package configuration
     include_package_data=True,
     zip_safe=False,
 )

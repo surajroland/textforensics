@@ -1,0 +1,12 @@
+# API and web frameworks
+fastapi>=0.100.0
+uvicorn>=0.20.0
+pydantic>=2.0.0
+
+# Web interface
+gradio>=4.0.0
+streamlit>=1.25.0
+
+# API utilities
+requests>=2.28.0
+httpx>=0.24.0

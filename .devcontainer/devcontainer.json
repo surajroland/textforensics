@@ -10,15 +10,7 @@
     "WANDB_CONSOLE": "off",
     "WANDB_API_KEY": "${localEnv:WANDB_API_KEY}",
     "HF_TOKEN": "${localEnv:HF_TOKEN}",
-    // Set environment variables for optimal GPU usage
-    "CUDA_VISIBLE_DEVICES": "0",
-    "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
-    "NVIDIA_VISIBLE_DEVICES": "all",
-    "NVIDIA_DRIVER_CAPABILITIES": "compute,utility",
-    // GPU-specific optimizations for RTX 5070 Ti
-    "TORCH_CUDA_ARCH_LIST": "8.9+PTX",
-    "CUDA_LAUNCH_BLOCKING": "0",
-    "TORCH_CUDNN_V8_API_ENABLED": "1"
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   },
 
   // VS Code customizations
@@ -203,8 +195,8 @@
     }
   },
 
-  // Comprehensive port forwarding
-  "forwardPorts": [8888, 6006, 8097, 8000, 7860, 5000, 3000, 5432, 6379],
+  // Port forwarding for development services
+  "forwardPorts": [8888, 6006, 8097, 8000, 7860],
   "portsAttributes": {
     "8888": {
       "label": "Jupyter Lab",
@@ -221,26 +213,7 @@
     "8000": {
       "label": "FastAPI",
       "onAutoForward": "ignore"
-    },
-    "7860": {
-      "label": "Gradio",
-      "onAutoForward": "ignore"
-    },
-    "5000": {
-      "label": "Live Server",
-      "onAutoForward": "ignore"
-    },
-    "3000": {
-      "label": "Development Server",
-      "onAutoForward": "ignore"
-    },
-    "5432": {
-      "label": "PostgreSQL",
-      "onAutoForward": "ignore"
-    },
-    "6379": {
-      "label": "Redis",
-      "onAutoForward": "ignore"
+    }
     }
   },
 
@@ -279,6 +252,5 @@
 
   // Security and permissions
   "privileged": false,
-  "remoteUser": "ubuntu",
+  "remoteUser": "root",
   "updateRemoteUserUID": false
-}

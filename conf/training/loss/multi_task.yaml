@@ -1,0 +1,38 @@
+# Multi-Task Loss Configuration
+name: "multi_task"
+description: "Multi-task loss with weighted combination"
+
+# Task-specific loss functions
+task_losses:
+  style_classification:
+    _target_: torch.nn.CrossEntropyLoss
+    weight: null
+    ignore_index: -100
+    reduction: "mean"
+
+  style_transfer:
+    _target_: torch.nn.CrossEntropyLoss
+    weight: null
+    ignore_index: -100  # For padding tokens
+    reduction: "mean"
+
+  anomaly_detection:
+    _target_: torch.nn.BCEWithLogitsLoss
+    pos_weight: null
+    reduction: "mean"
+
+  similarity_scoring:
+    _target_: torch.nn.MSELoss
+    reduction: "mean"
+
+# Task weights for multi-task learning
+task_weights:
+  style_classification: 1.0
+  style_transfer: 1.0
+  anomaly_detection: 0.8
+  similarity_scoring: 0.6
+
+# Loss combination strategy
+combination:
+  method: "weighted_sum"  # "weighted_sum", "uncertainty_weighting", "adaptive"
+  temperature: 1.0

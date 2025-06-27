@@ -1,0 +1,246 @@
+// TextForensics Model Architecture
+digraph TextForensicsArchitecture {
+  rankdir=TB;
+  node [shape=box, fontname="Arial", fontsize=10];
+  edge [fontname="Arial", fontsize=8];
+
+  // ================== INPUT STAGE ==================
+  subgraph cluster_input {
+    label="INPUT STAGE";
+    style=filled;
+    color=lightgrey;
+
+    source_text [label="Source Text\n\"I went to the store\"\n[text]", shape=ellipse, color=lightblue];
+    style_text [label="Style Example\n\"The old man sat by the sea. He waited.\"\n[text]", shape=ellipse, color=lightblue];
+  }
+
+  // ================== TOKENIZATION STAGE ==================
+  subgraph cluster_tokenization {
+    label="TOKENIZATION STAGE";
+    style=filled;
+    color=lightyellow;
+
+    tokenizer [label="BERT Tokenizer\nWordPiece Algorithm\nVocab Size: 30,522\nMax Length: 512"];
+    source_tokens [label="Source Tokens\n[101, 1045, 2253, 2000, 1996, 3573, 102, ...]\n[B, seq_len]", shape=ellipse];
+    style_tokens [label="Style Tokens\n[101, 1996, 2214, 2158, 2938, 2011, ...]\n[B, seq_len]", shape=ellipse];
+  }
+
+  // ================== SHARED BACKBONE STAGE ==================
+  subgraph cluster_backbone {
+    label="SHARED BACKBONE STAGE";
+    style=filled;
+    color=lightgreen;
+
+    // Embedding Layer
+    embedding_layer [label="Embedding Layer\nToken Embeddings: [30522, 768]\nPosition Embeddings: [512, 768]\nSegment Embeddings: [2, 768]\nOutput: [B, seq_len, 768]"];
+
+    // Transformer Blocks
+    transformer_block_1 [label="Transformer Block 1\nMulti-Head Attention (12 heads)\nFeed Forward (768→3072→768)\nLayer Norm + Residual\n[B, seq_len, 768]"];
+    transformer_block_2 [label="Transformer Block 2\nMulti-Head Attention (12 heads)\nFeed Forward (768→3072→768)\nLayer Norm + Residual\n[B, seq_len, 768]"];
+    transformer_dots [label="...\n(Blocks 3-11)", shape=ellipse, style=dashed];
+    transformer_block_12 [label="Transformer Block 12\nMulti-Head Attention (12 heads)\nFeed Forward (768→3072→768)\nLayer Norm + Residual\n[B, seq_len, 768]"];
+
+    // Pooling Layer
+    pooling_layer [label="Pooling Layer\nCLS Token Extraction\nPooler (Linear + Tanh)\nOutput: [B, 768]"];
+
+    source_pooled [label="Source Pooled\n[B, 768]", shape=ellipse, color=lightcyan];
+    style_pooled [label="Style Pooled\n[B, 768]", shape=ellipse, color=lightcyan];
+  }
+
+  // ================== STYLE ENCODER STAGE ==================
+  subgraph cluster_style_encoder {
+    label="STYLE ENCODER STAGE";
+    style=filled;
+    color=lightpink;
+
+    style_encoder_block [label="Style Encoder Block\nLinear: 768 → 768\nGELU Activation\nLayer Normalization\nOutput: [B, 768]"];
+
+    source_style_vector [label="Source Style Vector\n[B, 768]", shape=ellipse, color=orange];
+    target_style_vector [label="Target Style Vector\n[B, 768]", shape=ellipse, color=orange];
+  }
+
+  // ================== NECK STAGE ==================
+  subgraph cluster_necks {
+    label="TASK-SPECIFIC NECKS STAGE";
+    style=filled;
+    color=lightsteelblue;
+
+    // Classification Neck
+    subgraph cluster_class_neck {
+      label="Classification Neck";
+      style=filled;
+      color=lavender;
+
+      class_attention_pool [label="Attention Pooling\n768 → 384\nSelf-Attention Weights"];
+      class_global_pool [label="Global Average Pool\n768 → 384\nMean over sequence"];
+      class_feature_fusion [label="Feature Fusion\nConcat(384 + 384) → 768\nLinear + LayerNorm\nDropout(0.3)"];
+      class_features [label="Classification Features\n[B, 768]", shape=ellipse, color=plum];
+    }
+
+    // Generation Neck
+    subgraph cluster_gen_neck {
+      label="Generation Neck";
+      style=filled;
+      color=lightcoral;
+
+      content_encoder [label="Content Encoder\n768 → 512\nReLU Activation\nDropout(0.1)\nSemantic Extraction"];
+      style_extractor [label="Style Extractor\n768 → 256\nTanh Activation\nStyle Pattern Extraction"];
+      style_conditioner [label="Style Conditioner\nConcat(512 + 256) → 768\nLinear + LayerNorm\nContent + Style Fusion"];
+      gen_features [label="Generation Features\n[B, 768]", shape=ellipse, color=coral];
+    }
+
+    // Analysis Neck
+    subgraph cluster_anal_neck {
+      label="Analysis Neck";
+      style=filled;
+      color=lightseagreen;
+
+      bilstm_layer [label="Bidirectional LSTM\n768 → 512\nSequence Processing\nTemporal Patterns"];
+      positional_encoding [label="Positional Encoding\n768 → 256\nPosition-aware Features"];
+      multiscale_aggregation [label="Multi-Scale Aggregation\nWord → Sentence → Document\nHierarchical Features\n768 → 768"];
+      anal_features [label="Analysis Features\n[B, 768]", shape=ellipse, color=mediumseagreen];
+    }
+  }
+
+  // ================== HEAD STAGE ==================
+  subgraph cluster_heads {
+    label="TASK-SPECIFIC HEADS STAGE";
+    style=filled;
+    color=mistyrose;
+
+    // Classification Heads
+    subgraph cluster_class_heads {
+      label="Classification Heads (4)";
+      style=filled;
+      color=thistle;
+
+      style_classification_head [label="Style Classification Head\n768 → 512 → 256 → N_authors\nReLU + Dropout(0.3)\nSoftmax Output\n[B, N_authors]"];
+      anomaly_detection_head [label="Anomaly Detection Head\n768 → 512 → 128 → 1\nReLU + Dropout(0.5)\nSigmoid Output\n[B, 1]"];
+      genre_classification_head [label="Genre Classification Head\n768 → 256 → M_genres\nReLU + Dropout(0.2)\nSoftmax Output\n[B, M_genres]"];
+      era_classification_head [label="Era Classification Head\n768 → 256 → K_eras\nTemporal Conv1D\nSoftmax Output\n[B, K_eras]"];
+    }
+
+    // Generation Heads
+    subgraph cluster_gen_heads {
+      label="Generation Heads (5)";
+      style=filled;
+      color=peachpuff;
+
+      zero_shot_transfer_head [label="Zero-Shot Style Transfer Head\nDecoder Layers (2-3x)\nSelf-Attention + Cross-Attention\nFeed Forward Networks\nVocab Projection: 768 → 30522\n[B, seq_len, 30522]"];
+      cross_genre_head [label="Cross-Genre Transfer Head\nDomain Adaptation Layer\nGenre Embedding Fusion\nDecoder + Vocab Projection\n[B, seq_len, 30522]"];
+      style_transfer_head [label="Style Transfer Head\nClassical Transfer Approach\nEncoder-Decoder Architecture\nVocab Projection\n[B, seq_len, 30522]"];
+      style_interpolation_head [label="Style Interpolation Head\nConvex Combination in Embedding Space\nMulti-Author Style Blending\nWeighted Style Fusion\n[B, seq_len, 30522]"];
+      adversarial_robustness_head [label="Adversarial Robustness Head\nGAN-style Training\nDiscriminator + Generator\nRobust Text Generation\n[B, seq_len, 30522]"];
+    }
+
+    // Analysis Heads
+    subgraph cluster_anal_heads {
+      label="Analysis Heads (4)";
+      style=filled;
+      color=lightcyan;
+
+      similarity_head [label="Style Similarity Head\n768 → 512 → 256\nEmbedding Space Projection\nCosine Similarity Metric\n[B, similarity_score]"];
+      consistency_head [label="Consistency Tracking Head\n768 → 256 → 128\nLSTM + Change Detection\nSequence Analysis\n[B, seq_len, consistency]"];
+      multiscale_head [label="Multi-Scale Analysis Head\n768 → Word/Sent/Doc Features\nHierarchical Attention\nMulti-Level Style Vectors\n[B, multi_features]"];
+      style_explanation_head [label="Style Explanation Head\n768 → Attention Weights\nCross-Attention Heatmap\nHuman-Readable Analysis\n[B, explanation_features]"];
+    }
+  }
+
+  // ================== OUTPUT STAGE ==================
+  subgraph cluster_outputs {
+    label="OUTPUT STAGE";
+    style=filled;
+    color=lightgoldenrodyellow;
+
+    classification_output [label="Classification Outputs\nAuthor Probabilities: [0.8, 0.15, 0.05]\nAnomaly Score: 0.23\nGenre: [0.6, 0.3, 0.1]\nEra: [0.4, 0.35, 0.25]", shape=ellipse, color=gold];
+    generation_output [label="Generation Outputs\nZero-Shot: \"I went to store. Bought things.\"\nCross-Genre: Domain-adapted text\nStyle Transfer: Classical transfer output\nInterpolation: Blended multi-author style\nAdversarial: Robust generated text", shape=ellipse, color=gold];
+    analysis_output [label="Analysis Outputs\nSimilarity Score: 0.87\nConsistency: [0.9, 0.8, 0.3, 0.7]\nMulti-Scale Features: {...}\nExplanation: Human-readable analysis", shape=ellipse, color=gold];
+  }
+
+  // ================== CONNECTIONS ==================
+
+  // Input to Tokenization
+  source_text -> tokenizer;
+  style_text -> tokenizer;
+  tokenizer -> source_tokens;
+  tokenizer -> style_tokens;
+
+  // Tokenization to Backbone (source path)
+  source_tokens -> embedding_layer;
+  embedding_layer -> transformer_block_1;
+  transformer_block_1 -> transformer_block_2;
+  transformer_block_2 -> transformer_dots;
+  transformer_dots -> transformer_block_12;
+  transformer_block_12 -> pooling_layer;
+  pooling_layer -> source_pooled;
+
+  // Tokenization to Backbone (style path)
+  style_tokens -> embedding_layer;
+  pooling_layer -> style_pooled;
+
+  // Style Encoder
+  source_pooled -> style_encoder_block;
+  style_pooled -> style_encoder_block;
+  style_encoder_block -> source_style_vector;
+  style_encoder_block -> target_style_vector;
+
+  // Necks
+  source_style_vector -> class_attention_pool;
+  source_style_vector -> content_encoder;
+  source_style_vector -> bilstm_layer;
+
+  target_style_vector -> style_extractor;
+
+  // Classification Neck Flow
+  class_attention_pool -> class_feature_fusion;
+  class_global_pool -> class_feature_fusion;
+  class_feature_fusion -> class_features;
+
+  // Generation Neck Flow
+  content_encoder -> style_conditioner;
+  style_extractor -> style_conditioner;
+  style_conditioner -> gen_features;
+
+  // Analysis Neck Flow
+  bilstm_layer -> multiscale_aggregation;
+  positional_encoding -> multiscale_aggregation;
+  multiscale_aggregation -> anal_features;
+
+  // Heads
+  class_features -> style_classification_head;
+  class_features -> anomaly_detection_head;
+  class_features -> genre_classification_head;
+  class_features -> era_classification_head;
+
+  gen_features -> zero_shot_transfer_head;
+  gen_features -> cross_genre_head;
+  gen_features -> style_transfer_head;
+  gen_features -> style_interpolation_head;
+  gen_features -> adversarial_robustness_head;
+
+  anal_features -> similarity_head;
+  anal_features -> consistency_head;
+  anal_features -> multiscale_head;
+  anal_features -> style_explanation_head;
+
+  // Outputs
+  style_classification_head -> classification_output;
+  anomaly_detection_head -> classification_output;
+  genre_classification_head -> classification_output;
+  era_classification_head -> classification_output;
+
+  zero_shot_transfer_head -> generation_output;
+  cross_genre_head -> generation_output;
+  style_transfer_head -> generation_output;
+  style_interpolation_head -> generation_output;
+  adversarial_robustness_head -> generation_output;
+
+  similarity_head -> analysis_output;
+  consistency_head -> analysis_output;
+  multiscale_head -> analysis_output;
+  style_explanation_head -> analysis_output;
+
+  // Additional neck connections
+  source_style_vector -> class_global_pool;
+  source_style_vector -> positional_encoding;
+}

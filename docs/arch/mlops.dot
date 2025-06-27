@@ -1,0 +1,180 @@
+// TextForensics ML pipeline
+digraph TextForensicsMLPipeline {
+  rankdir=TB;
+  node [shape=box, fontname="Arial", fontsize=9];
+  edge [fontname="Arial", fontsize=8];
+
+  // ================== DATA PIPELINE ==================
+  subgraph cluster_data {
+    label="DATA LOADING & PREPROCESSING PIPELINE";
+    style=filled;
+    color=lightgray;
+
+    spooky_dataset [label="Spooky Authors Dataset\n3 Authors: EAP, HPL, MWS\n19K Text Samples", shape=cylinder, color=lightblue];
+    style_transfer_data [label="Style Transfer Dataset\nTriplets: (source, style, target)\nSynthetic + Manual Pairs", shape=cylinder, color=lightblue];
+
+    multi_task_loader [label="Multi-Task Data Loader\nBatch Sampling by Task\nTask Ratio Control\nDynamic Balancing"];
+
+    text_preprocessor [label="Text Preprocessor\nCleaning + Normalization\nLength Filtering\nCharacter Encoding"];
+
+    batch_composer [label="Batch Composer\nMixed-Task Batching\nTensor Preparation\nGPU Memory Optimization"];
+
+    training_batch [label="Training Batch\nMixed Tasks\n[B=24, seq_len=512]\nBF16 Precision", shape=ellipse, color=lightcyan];
+  }
+
+  // ================== FORWARD PASS PIPELINE ==================
+  subgraph cluster_forward {
+    label="FORWARD PASS PIPELINE";
+    style=filled;
+    color=lightgreen;
+
+    // Core Model (Simplified)
+    model_forward [label="TextForensics Model\nBERT Backbone\nStyle Encoder\n3 Necks + 13 Heads"];
+
+    // Multi-task outputs
+    task_outputs [label="Multi-Task Outputs\nClassification Logits\nGenerated Tokens\nAnalysis Features", shape=ellipse, color=lightgreen];
+  }
+
+  // ================== LOSS COMPUTATION PIPELINE ==================
+  subgraph cluster_loss {
+    label="MULTI-TASK LOSS COMPUTATION PIPELINE";
+    style=filled;
+    color=lightyellow;
+
+    loss_router [label="Loss Router\nTask Type Detection\nOutput Routing\nTarget Alignment"];
+
+    // Individual Loss Computations
+    classification_loss [label="Classification Losses\nCrossEntropyLoss (Style, Genre, Era)\nBCEWithLogitsLoss (Anomaly)\nWeight: [1.0, 0.8, 1.0, 0.9]"];
+
+    generation_loss [label="Generation Losses\nCrossEntropyLoss (Token Prediction)\nContent Preservation Loss\nStyle Consistency Loss\nWeight: [1.0, 1.0, 0.8, 0.7, 0.9]"];
+
+    analysis_loss [label="Analysis Losses\nMSELoss (Similarity)\nSequence Loss (Consistency)\nMulti-Scale Loss\nExplanation Loss\nWeight: [0.6, 0.7, 0.5, 0.4]"];
+
+    loss_aggregator [label="Loss Aggregator\nWeighted Sum\nL_total = Σ(wi * Li)\nGradient Scaling"];
+
+    total_loss [label="Total Loss\nScalar Value\nBackprop Ready", shape=ellipse, color=orange];
+  }
+
+  // ================== OPTIMIZATION PIPELINE ==================
+  subgraph cluster_optimization {
+    label="OPTIMIZATION PIPELINE";
+    style=filled;
+    color=lightcoral;
+
+    gradient_computation [label="Gradient Computation\nAutograd Backward\nGradient Accumulation\nClipping (max_norm=1.0)"];
+
+    mixed_precision [label="Mixed Precision Handler\nBF16 → FP32 Conversion\nLoss Scaling\nGradient Unscaling"];
+
+    optimizer_step [label="AdamW Optimizer\nlr=5e-5\nbetas=[0.9, 0.999]\nweight_decay=0.01\nParameter Updates"];
+
+    scheduler_step [label="Cosine Annealing LR\nT_max=50 epochs\neta_min=1e-7\nWarmup: 1000 steps"];
+
+    gradient_checkpointing [label="Gradient Checkpointing\nMemory Optimization\nTrade Compute for Memory\nActivation Recomputation"];
+  }
+
+  // ================== VALIDATION PIPELINE ==================
+  subgraph cluster_validation {
+    label="VALIDATION PIPELINE";
+    style=filled;
+    color=lightsteelblue;
+
+    val_data_loader [label="Validation DataLoader\nSeparate Val Set\nNo Task Mixing\nEvaluation Mode"];
+
+    metrics_computation [label="Metrics Computation\nClassification: F1, Accuracy\nGeneration: BLEU, ROUGE\nAnalysis: Cosine Sim, MSE"];
+
+    early_stopping [label="Early Stopping\nPatience: 10 epochs\nMonitor: val_loss\nBest Model Saving"];
+
+    performance_tracking [label="Performance Tracking\nValidation Metrics\nLoss Trends\nConvergence Monitoring"];
+  }
+
+  // ================== MEMORY MANAGEMENT ==================
+  subgraph cluster_memory {
+    label="MEMORY MANAGEMENT PIPELINE";
+    style=filled;
+    color=lightpink;
+
+    gpu_monitor [label="GPU Memory Monitor\nVRAM Usage: 14/16GB\nMemory Allocation\nOOM Prevention"];
+
+    batch_accumulation [label="Gradient Accumulation\nEffective Batch Size: 48\nAccumulation Steps: 2\nMemory Efficiency"];
+
+    cache_management [label="Cache Management\nPyTorch Cache Clearing\nPeriodic Empty Cache\nMemory Optimization"];
+  }
+
+  // ================== EXPERIMENT TRACKING ==================
+  subgraph cluster_tracking {
+    label="EXPERIMENT TRACKING PIPELINE";
+    style=filled;
+    color=lightcyan;
+
+    wandb_logger [label="Weights & Biases\nReal-time Logging\nHyperparameter Tracking\nMetric Visualization"];
+
+    checkpoint_saver [label="Checkpoint Manager\nModel State Saving\nOptimizer State\nBest Model Selection"];
+
+    tensorboard_logger [label="TensorBoard Logger\nLoss Curves\nLearning Rate\nGradient Histograms"];
+  }
+
+  // ================== ZERO-SHOT INFERENCE PIPELINE ==================
+  subgraph cluster_zero_shot {
+    label="ZERO-SHOT INFERENCE PIPELINE";
+    style=filled;
+    color=lavender;
+
+    style_extraction [label="Style Vector Extraction\nAny Author Example\nBERT Encoding\nStyle Representation"];
+
+    style_conditioning [label="Style Conditioning\nContent Preservation\nStyle Application\nZero-Shot Transfer"];
+
+    generation_inference [label="Generation Inference\nNo Retraining Required\nReal-time Style Transfer\nAny-to-Any Mapping"];
+  }
+
+  // ================== PIPELINE CONNECTIONS ==================
+
+  // Data Flow
+  spooky_dataset -> multi_task_loader;
+  style_transfer_data -> multi_task_loader;
+  multi_task_loader -> text_preprocessor;
+  text_preprocessor -> batch_composer;
+  batch_composer -> training_batch;
+
+  // Forward Pass
+  training_batch -> model_forward;
+  model_forward -> task_outputs;
+
+  // Loss Computation
+  task_outputs -> loss_router;
+  loss_router -> classification_loss;
+  loss_router -> generation_loss;
+  loss_router -> analysis_loss;
+  classification_loss -> loss_aggregator;
+  generation_loss -> loss_aggregator;
+  analysis_loss -> loss_aggregator;
+  loss_aggregator -> total_loss;
+
+  // Optimization
+  total_loss -> gradient_computation;
+  gradient_computation -> mixed_precision;
+  mixed_precision -> optimizer_step;
+  optimizer_step -> scheduler_step;
+  gradient_computation -> gradient_checkpointing;
+
+  // Validation
+  val_data_loader -> model_forward;
+  task_outputs -> metrics_computation;
+  metrics_computation -> early_stopping;
+  metrics_computation -> performance_tracking;
+
+  // Memory Management
+  training_batch -> gpu_monitor;
+  gradient_computation -> batch_accumulation;
+  optimizer_step -> cache_management;
+
+  // Experiment Tracking
+  total_loss -> wandb_logger;
+  metrics_computation -> wandb_logger;
+  optimizer_step -> checkpoint_saver;
+  total_loss -> tensorboard_logger;
+
+  // Zero-Shot Flow
+  style_transfer_data -> style_extraction;
+  style_extraction -> style_conditioning;
+  style_conditioning -> generation_inference;
+}

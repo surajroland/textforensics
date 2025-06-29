@@ -97,10 +97,42 @@
         },
         "callbacks": {
           "base.yaml": null,
-          "early_stopping.yaml": null,
-          "model_checkpoint.yaml": null,
-          "multi_task_logger.yaml": null,
-          "schema.py": null
+          "callbacks.yaml": null,
+          "schema.py": null,
+          "multi_task": {
+            "base.yaml": null,
+            "schema.py": null,
+            "early_stopping.yaml": null,
+            "model_checkpoint.yaml": null,
+            "multi_task_logger.yaml": null
+          },
+          "head_task": {
+            "classification": {
+              "base.yaml": null,
+              "schema.py": null,
+              "style_classification_callbacks.yaml": null,
+              "anomaly_detection_callbacks.yaml": null,
+              "genre_classification_callbacks.yaml": null,
+              "era_classification_callbacks.yaml": null
+            },
+            "generation": {
+              "base.yaml": null,
+              "schema.py": null,
+              "zero_shot_transfer_callbacks.yaml": null,
+              "cross_domain_callbacks.yaml": null,
+              "style_transfer_callbacks.yaml": null,
+              "style_interpolation_callbacks.yaml": null,
+              "adversarial_robustness_callbacks.yaml": null
+            },
+            "analysis": {
+              "base.yaml": null,
+              "schema.py": null,
+              "similarity_callbacks.yaml": null,
+              "consistency_callbacks.yaml": null,
+              "multiscale_callbacks.yaml": null,
+              "style_explanation_callbacks.yaml": null
+            }
+          }
         }
       },
       "data": {
@@ -783,6 +815,12 @@
       },
       "unit": {
         "__init__.py": null,
+        "test_model_loading.py": null,
+        "test_forward_pass.py": null,
+        "test_training_step.py": null,
+        "test_inference_step.py": null,
+        "test_config_loading.py": null,
+        "test_gpu_availability.py": null,
         "interfaces": {
           "__init__.py": null,
           "test_models.py": null,
@@ -844,19 +882,19 @@
           "test_serialization.py": null,
           "test_authentication.py": null,
           "test_api_workflows.py": null
+        },
+        "utils": {
+          "__init__.py": null,
+          "test_config.py": null,
+          "test_device.py": null,
+          "test_logging.py": null,
+          "test_io.py": null,
+          "test_reproducibility.py": null,
+          "test_profiling.py": null,
+          "test_text_preprocessing.py": null,
+          "test_experiment_tracking.py": null,
+          "test_deployment.py": null
         }
-      },
-      "utils": {
-        "__init__.py": null,
-        "test_config.py": null,
-        "test_device.py": null,
-        "test_logging.py": null,
-        "test_io.py": null,
-        "test_reproducibility.py": null,
-        "test_profiling.py": null,
-        "test_text_preprocessing.py": null,
-        "test_experiment_tracking.py": null,
-        "test_deployment.py": null
       },
       "integration": {
         "__init__.py": null,
@@ -866,7 +904,8 @@
         "test_multi_task_training.py": null,
         "test_zero_shot_transfer.py": null,
         "test_config_composition.py": null,
-        "test_component_integration.py": null
+        "test_component_integration.py": null,
+        "test_data_privacy.py": null
       },
       "e2e": {
         "__init__.py": null,
@@ -874,6 +913,54 @@
         "test_full_inference.py": null,
         "test_gpu_training.py": null,
         "test_production_deployment.py": null
+      },
+      "data_validation": {
+        "__init__.py": null,
+        "test_data_integrity.py": null,
+        "test_data_loading.py": null,
+        "test_preprocessing.py": null,
+        "test_augmentation.py": null,
+        "test_tokenization.py": null,
+        "test_input_validation.py": null,
+        "test_data_quality_monitoring.py": null
+      },
+      "model_validation": {
+        "__init__.py": null,
+        "test_architecture_constraints.py": null,
+        "test_gradient_flow.py": null,
+        "test_numerical_stability.py": null,
+        "test_loss_convergence.py": null,
+        "test_overfitting_prevention.py": null,
+        "test_model_outputs.py": null,
+        "test_metric_consistency.py": null,
+        "test_checkpoint_compatibility.py": null,
+        "test_reproducibility.py": null,
+        "test_adversarial_robustness.py": null,
+        "test_model_extraction.py": null,
+        "test_prediction_correctness.py": null,
+        "test_business_logic.py": null,
+        "test_domain_constraints.py": null
+      },
+      "monitoring": {
+        "__init__.py": null,
+        "test_drift_detection.py": null,
+        "test_performance_monitoring.py": null,
+        "test_alert_systems.py": null,
+        "test_model_degradation.py": null,
+        "test_training_speed.py": null,
+        "test_inference_latency.py": null,
+        "test_memory_usage.py": null,
+        "test_gpu_utilization.py": null,
+        "test_batch_size_scaling.py": null
+      },
+      "ab_testing": {
+        "__init__.py": null,
+        "test_model_comparison.py": null,
+        "test_traffic_splitting.py": null,
+        "test_shadow_testing.py": null,
+        "test_metric_collection.py": null,
+        "test_champion_challenger.py": null,
+        "test_user_workflows.py": null
       }
     }
   }

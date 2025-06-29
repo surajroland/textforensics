@@ -1,0 +1,880 @@
+{
+  "textforensics": {
+    ".dockerignore": null,
+    ".env": null,
+    ".gitignore": null,
+    ".pre-commit-config.yaml": null,
+    "Dockerfile": null,
+    "LICENSE": null,
+    "Makefile": null,
+    "README.md": null,
+    "docker-compose.yml": null,
+    "pyproject.toml": null,
+    "setup.py": null,
+    "conf": {
+      "config.yaml": null,
+      "pipeline": {
+        "training_pipeline.yaml": null,
+        "evaluation_pipeline.yaml": null,
+        "inference_pipeline.yaml": null,
+        "schema.py": null
+      },
+      "model": {
+        "backbone": {
+          "base.yaml": null,
+          "bert_base.yaml": null,
+          "schema.py": null
+        },
+        "encoder": {
+          "base.yaml": null,
+          "style_encoder.yaml": null,
+          "schema.py": null
+        },
+        "necks": {
+          "base.yaml": null,
+          "classification_neck.yaml": null,
+          "generation_neck.yaml": null,
+          "analysis_neck.yaml": null,
+          "schema.py": null
+        },
+        "heads": {
+          "base.yaml": null,
+          "schema.py": null,
+          "classification": {
+            "base.yaml": null,
+            "schema.py": null,
+            "style_classification.yaml": null,
+            "anomaly_detection.yaml": null,
+            "genre_classification.yaml": null,
+            "era_classification.yaml": null
+          },
+          "generation": {
+            "base.yaml": null,
+            "schema.py": null,
+            "zero_shot_style_transfer.yaml": null,
+            "cross_domain.yaml": null,
+            "style_transfer.yaml": null,
+            "style_interpolation.yaml": null,
+            "adversarial_robustness.yaml": null
+          },
+          "analysis": {
+            "base.yaml": null,
+            "schema.py": null,
+            "similarity.yaml": null,
+            "consistency.yaml": null,
+            "multiscale.yaml": null,
+            "style_explanation.yaml": null
+          }
+        },
+        "unified_base.yaml": null,
+        "schema.py": null
+      },
+      "training": {
+        "base.yaml": null,
+        "trainer.yaml": null,
+        "schema.py": null,
+        "experiments": {
+          "training.yaml": null,
+          "ablation_study.yaml": null,
+          "hyperparameter_sweep.yaml": null
+        },
+        "optimizer": {
+          "base.yaml": null,
+          "adamw.yaml": null,
+          "sgd.yaml": null,
+          "schema.py": null
+        },
+        "scheduler": {
+          "base.yaml": null,
+          "cosine.yaml": null,
+          "linear.yaml": null,
+          "schema.py": null
+        },
+        "loss": {
+          "base.yaml": null,
+          "multi_task.yaml": null,
+          "schema.py": null
+        },
+        "callbacks": {
+          "base.yaml": null,
+          "early_stopping.yaml": null,
+          "model_checkpoint.yaml": null,
+          "multi_task_logger.yaml": null,
+          "schema.py": null
+        }
+      },
+      "data": {
+        "base.yaml": null,
+        "spooky_authors.yaml": null,
+        "custom_dataset.yaml": null,
+        "schema.py": null
+      },
+      "infrastructure": {
+        "compute": {
+          "base.yaml": null,
+          "local.yaml": null,
+          "schema.py": null
+        },
+        "storage": {
+          "base.yaml": null,
+          "local_storage.yaml": null,
+          "schema.py": null
+        }
+      },
+      "inference": {
+        "base.yaml": null,
+        "batch_inference.yaml": null,
+        "real_time.yaml": null,
+        "optimization.yaml": null,
+        "schema.py": null
+      },
+      "evaluation": {
+        "base.yaml": null,
+        "metrics.yaml": null,
+        "benchmarks.yaml": null,
+        "schema.py": null
+      }
+    },
+    "data": {
+      "processed": {},
+      "raw": {},
+      "sample": {}
+    },
+    "docs": {
+      "api": {},
+      "arch": {
+        "mlops.dot": null,
+        "mlops.png": null,
+        "model.dot": null,
+        "model.png": null,
+        "net_arch.md": null
+      },
+      "ci": {
+        "devops.md": null,
+        "mlops.md": null
+      },
+      "infrastructure": {
+        "hardware_resources.txt": null,
+        "proj_tree.txt": null
+      },
+      "research": {
+        "synopses.md": null
+      },
+      "source": {},
+      "tutorials": {}
+    },
+    "examples": {
+      "notebooks": {},
+      "quickstart": {
+        "simple_example.py": null
+      }
+    },
+    "logs": {},
+    "models": {},
+    "outputs": {},
+    "requirements": {
+      "api.txt": null,
+      "base.txt": null,
+      "dev.txt": null,
+      "training.txt": null
+    },
+    "scripts": {
+      "ci": {},
+      "data": {},
+      "deploy": {},
+      "dev": {},
+      "docker": {},
+      "monitoring": {
+        "monitor_gpu.py": null
+      },
+      "training": {
+        "benchmark_gpu.py": null,
+        "train.py": null
+      },
+      "utils": {}
+    },
+    "utils": {
+      "__init__.py": null,
+      "config.py": null,
+      "device.py": null,
+      "logging.py": null,
+      "io.py": null,
+      "reproducibility.py": null,
+      "profiling.py": null,
+      "text_preprocessing.py": null,
+      "experiment_tracking.py": null,
+      "deployment.py": null
+    },
+    "src": {
+      "textforensics": {
+        "__init__.py": null,
+        "cli.py": null,
+        "api.py": null,
+        "interfaces": {
+          "__init__.py": null,
+          "models": {
+            "__init__.py": null,
+            "model.py": null,
+            "backbone.py": null,
+            "encoder.py": null,
+            "neck.py": null,
+            "head.py": null,
+            "component.py": null,
+            "layer.py": null
+          },
+          "data": {
+            "__init__.py": null,
+            "dataset.py": null,
+            "dataloader.py": null,
+            "transform.py": null,
+            "sampler.py": null,
+            "preprocessor.py": null
+          },
+          "training": {
+            "__init__.py": null,
+            "trainer.py": null,
+            "optimizer.py": null,
+            "scheduler.py": null,
+            "callback.py": null,
+            "checkpoint.py": null
+          },
+          "losses": {
+            "__init__.py": null,
+            "loss.py": null,
+            "regularizer.py": null
+          },
+          "evaluation": {
+            "__init__.py": null,
+            "evaluator.py": null,
+            "metric.py": null,
+            "benchmark.py": null
+          },
+          "inference": {
+            "__init__.py": null,
+            "predictor.py": null,
+            "postprocessor.py": null
+          }
+        },
+        "multi_task": {
+          "__init__.py": null,
+          "multi_task_manager.py": null,
+          "models": {
+            "__init__.py": null,
+            "base.py": null,
+            "backbone.py": null,
+            "unified_model.py": null,
+            "encoders": {
+              "__init__.py": null,
+              "style_encoder.py": null
+            },
+            "necks": {
+              "__init__.py": null,
+              "base_neck.py": null,
+              "classification_neck.py": null,
+              "generation_neck.py": null,
+              "analysis_neck.py": null
+            },
+            "heads": {
+              "__init__.py": null,
+              "base_head.py": null,
+              "classification": {
+                "__init__.py": null,
+                "style_classification": {
+                  "__init__.py": null,
+                  "style_classification_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "feature_extractor.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "classification_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "confusion_matrix_callback.py": null,
+                    "per_class_metrics_callback.py": null,
+                    "misclassification_logger.py": null,
+                    "author_embedding_visualizer.py": null
+                  }
+                },
+                "anomaly_detection": {
+                  "__init__.py": null,
+                  "anomaly_detection_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "anomaly_scorer.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "anomaly_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "roc_auc_plotter.py": null,
+                    "threshold_optimizer.py": null,
+                    "anomaly_heatmap_generator.py": null,
+                    "false_positive_tracker.py": null
+                  }
+                },
+                "genre_classification": {
+                  "__init__.py": null,
+                  "genre_classification_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "genre_extractor.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "genre_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "genre_distribution_tracker.py": null,
+                    "cross_genre_confusion_matrix.py": null,
+                    "genre_feature_visualizer.py": null
+                  }
+                },
+                "era_classification": {
+                  "__init__.py": null,
+                  "era_classification_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "temporal_extractor.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "era_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "temporal_trend_plotter.py": null,
+                    "era_transition_monitor.py": null,
+                    "historical_feature_tracker.py": null
+                  }
+                }
+              },
+              "generation": {
+                "__init__.py": null,
+                "zero_shot_style_transfer": {
+                  "__init__.py": null,
+                  "zero_shot_transfer_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "content_encoder.py": null,
+                    "style_extractor.py": null,
+                    "style_conditioner.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "content_preservation_loss.py": null,
+                    "style_consistency_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "style_transfer_visualizer.py": null,
+                    "bleu_score_tracker.py": null,
+                    "attention_heatmap_logger.py": null,
+                    "style_interpolation_demo.py": null,
+                    "content_preservation_monitor.py": null
+                  }
+                },
+                "cross_domain": {
+                  "__init__.py": null,
+                  "cross_genre_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "domain_adapter.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "domain_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "domain_adaptation_tracker.py": null,
+                    "cross_domain_similarity_monitor.py": null,
+                    "genre_transfer_visualizer.py": null
+                  }
+                },
+                "style_transfer": {
+                  "__init__.py": null,
+                  "style_transfer_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "supervised_encoder.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "supervised_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "supervised_transfer_tracker.py": null,
+                    "style_reconstruction_monitor.py": null,
+                    "parallel_corpus_visualizer.py": null
+                  }
+                },
+                "style_interpolation": {
+                  "__init__.py": null,
+                  "style_interpolation_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "interpolation_mixer.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "interpolation_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "interpolation_ratio_tracker.py": null,
+                    "multi_author_blend_visualizer.py": null,
+                    "style_gradient_monitor.py": null
+                  }
+                },
+                "adversarial_robustness": {
+                  "__init__.py": null,
+                  "adversarial_robustness_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "generator.py": null,
+                    "discriminator.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "adversarial_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "adversarial_examples_logger.py": null,
+                    "robustness_curve_plotter.py": null,
+                    "gradient_norm_monitor.py": null,
+                    "discriminator_accuracy_tracker.py": null
+                  }
+                }
+              },
+              "analysis": {
+                "__init__.py": null,
+                "similarity": {
+                  "__init__.py": null,
+                  "similarity_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "similarity_calculator.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "similarity_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "similarity_distribution_plotter.py": null,
+                    "embedding_space_visualizer.py": null,
+                    "correlation_heatmap_generator.py": null,
+                    "outlier_detection_logger.py": null
+                  }
+                },
+                "consistency": {
+                  "__init__.py": null,
+                  "consistency_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "consistency_tracker.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "consistency_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "consistency_drift_monitor.py": null,
+                    "change_point_detector.py": null,
+                    "style_evolution_tracker.py": null
+                  }
+                },
+                "multiscale": {
+                  "__init__.py": null,
+                  "multiscale_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "multiscale_analyzer.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "multiscale_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "hierarchical_attention_visualizer.py": null,
+                    "word_sentence_doc_tracker.py": null,
+                    "multiscale_feature_plotter.py": null
+                  }
+                },
+                "style_explanation": {
+                  "__init__.py": null,
+                  "style_explanation_head.py": null,
+                  "components": {
+                    "__init__.py": null,
+                    "explanation_generator.py": null
+                  },
+                  "data": {
+                    "__init__.py": null,
+                    "dataset.py": null,
+                    "dataloader.py": null
+                  },
+                  "losses": {
+                    "__init__.py": null,
+                    "explanation_loss.py": null
+                  },
+                  "evaluation": {
+                    "__init__.py": null,
+                    "evaluator.py": null,
+                    "metrics.py": null
+                  },
+                  "inference": {
+                    "__init__.py": null,
+                    "predictor.py": null,
+                    "postprocessor.py": null
+                  },
+                  "callbacks": {
+                    "__init__.py": null,
+                    "attention_weight_heatmaps.py": null,
+                    "feature_importance_tracker.py": null,
+                    "explanation_consistency_monitor.py": null,
+                    "human_readable_report_generator.py": null
+                  }
+                }
+              }
+            }
+          },
+          "data": {
+            "__init__.py": null,
+            "multi_task_loader.py": null
+          },
+          "losses": {
+            "__init__.py": null,
+            "multi_task_loss.py": null
+          },
+          "training": {
+            "__init__.py": null,
+            "trainer.py": null,
+            "callbacks": {
+              "__init__.py": null,
+              "early_stopping.py": null,
+              "model_checkpoint.py": null
+            },
+            "schedulers": {
+              "__init__.py": null,
+              "custom_schedulers.py": null
+            }
+          },
+          "evaluation": {
+            "__init__.py": null,
+            "evaluator.py": null,
+            "metrics": {
+              "__init__.py": null,
+              "classification_metrics.py": null,
+              "generation_metrics.py": null,
+              "style_metrics.py": null
+            },
+            "benchmarks": {
+              "__init__.py": null,
+              "baseline_comparison.py": null
+            }
+          },
+          "inference": {
+            "__init__.py": null,
+            "predictor.py": null,
+            "zero_shot_inference.py": null
+          }
+        }
+      }
+    },
+    "tests": {
+      "__init__.py": null,
+      "conftest.py": null,
+      "fixtures": {
+        "__init__.py": null,
+        "model_fixtures.py": null,
+        "data_fixtures.py": null,
+        "config_fixtures.py": null,
+        "infrastructure_fixtures.py": null
+      },
+      "unit": {
+        "__init__.py": null,
+        "interfaces": {
+          "__init__.py": null,
+          "test_models.py": null,
+          "test_data.py": null,
+          "test_training.py": null,
+          "test_losses.py": null,
+          "test_evaluation.py": null,
+          "test_inference.py": null
+        },
+        "multi_task": {
+          "__init__.py": null,
+          "test_multi_task_manager.py": null,
+          "models": {
+            "__init__.py": null,
+            "test_backbone.py": null,
+            "test_encoders.py": null,
+            "test_necks.py": null,
+            "test_unified_model.py": null,
+            "test_heads": {
+              "__init__.py": null,
+              "test_classification.py": null,
+              "test_generation.py": null,
+              "test_analysis.py": null
+            }
+          },
+          "data": {
+            "__init__.py": null,
+            "test_multi_task_loader.py": null
+          },
+          "training": {
+            "__init__.py": null,
+            "test_trainer.py": null,
+            "test_callbacks.py": null
+          },
+          "losses": {
+            "__init__.py": null,
+            "test_multi_task_loss.py": null
+          },
+          "evaluation": {
+            "__init__.py": null,
+            "test_evaluator.py": null,
+            "test_metrics.py": null
+          },
+          "inference": {
+            "__init__.py": null,
+            "test_predictor.py": null,
+            "test_zero_shot_inference.py": null
+          }
+        },
+        "cli": {
+          "__init__.py": null,
+          "test_commands.py": null,
+          "test_argument_parsing.py": null,
+          "test_cli_workflows.py": null
+        },
+        "api": {
+          "__init__.py": null,
+          "test_endpoints.py": null,
+          "test_serialization.py": null,
+          "test_authentication.py": null,
+          "test_api_workflows.py": null
+        }
+      },
+      "utils": {
+        "__init__.py": null,
+        "test_config.py": null,
+        "test_device.py": null,
+        "test_logging.py": null,
+        "test_io.py": null,
+        "test_reproducibility.py": null,
+        "test_profiling.py": null,
+        "test_text_preprocessing.py": null,
+        "test_experiment_tracking.py": null,
+        "test_deployment.py": null
+      },
+      "integration": {
+        "__init__.py": null,
+        "test_training_pipeline.py": null,
+        "test_evaluation_pipeline.py": null,
+        "test_inference_pipeline.py": null,
+        "test_multi_task_training.py": null,
+        "test_zero_shot_transfer.py": null,
+        "test_config_composition.py": null,
+        "test_component_integration.py": null
+      },
+      "e2e": {
+        "__init__.py": null,
+        "test_full_training.py": null,
+        "test_full_inference.py": null,
+        "test_gpu_training.py": null,
+        "test_production_deployment.py": null
+      }
+    }
+  }
+}
